@@ -1,0 +1,28 @@
+[package]
+name = "govbuilder-v2"
+version = "0.1.0"
+edition = "2021"
+
+# -------------------------------------------------
+#  CORE TAURI (no extra features)
+# -------------------------------------------------
+[dependencies]
+tauri = { version = "2.0", features = [] }
+
+# -------------------------------------------------
+#  PLUGINS – provide fs & dialog
+# -------------------------------------------------
+tauri-plugin-fs = { version = "2.0", optional = true }
+tauri-plugin-dialog = { version = "2.0", optional = true }
+
+# -------------------------------------------------
+#  BUILD
+# -------------------------------------------------
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+# -------------------------------------------------
+#  ENABLE PLUGINS FOR THE BINARY
+# -------------------------------------------------
+[features]
+default = ["tauri-plugin-fs", "tauri-plugin-dialog"]

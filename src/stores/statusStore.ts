@@ -1,28 +1,30 @@
-import { readonly, ref } from 'vue'
-
-export interface Status {
-  id: string
-  title: string
-  email: string
-}
-
-const list = ref<Status[]>([])
+import { computed } from 'vue'
+import { useProjectStore } from '@/stores/projectStore'
 
 export function useStatusStore() {
-  function setList(newList: Status[]) {
-    list.value = newList
-  }
-  function add(item: Omit<Status, 'id'>) {
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2)
-    list.value.push({ ...item, id })
-  }
-  function update(id: string, updates: Partial<Status>) {
-    const idx = list.value.findIndex((s) => s.id === id)
-    if (idx > -1) list.value[idx] = { ...list.value[idx], ...updates }
-  }
-  function remove(id: string) {
-    list.value = list.value.filter((s) => s.id !== id)
+  const { currentConfig } = useProjectStore()
+
+  const list = computed({
+    get: () => currentConfig.statuses || [],
+    set: (val) => currentConfig.statuses = val
+  })
+
+  function add(item: any) {
+    list.value = [...list.value, item]
   }
 
-  return { list: readonly(list), setList, add, update, remove }
+  function update(id: string, data: any) {
+    list.value = list.value.map((s: any) => s.id === id ? { ...s, ...data } : s)
+  }
+
+  function remove(id: string) {
+    list.value = list.value.filter((s: any) => s.id !== id)
+  }
+
+  return {
+    list: computed(() => list.value), // read-only for components
+    add,
+    update,
+    remove
+  }
 }

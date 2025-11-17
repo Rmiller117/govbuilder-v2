@@ -1,110 +1,114 @@
-import { ref, readonly, watch, computed } from 'vue'
-import {
-  mkdir,
-  readDir,
-  readTextFile,
-  writeTextFile,
-  BaseDirectory
-} from '@tauri-apps/plugin-fs'
-import { appLocalDataDir } from '@tauri-apps/api/path'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { appLocalDataDir, basename, resolve } from '@tauri-apps/api/path'
+import { open } from '@tauri-apps/plugin-dialog'
+import { create, exists, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs'
 
-export interface Project {
+interface ProjectSummary {
   name: string
-  path: string   // folder name inside AppLocalData
+  path: string                // full absolute directory path
 }
 
-const currentProject = ref<Project | null>(null)
-const currentConfig = ref<any>({})   // this is your editable config.json
-const projects = ref<Project[]>([])
+interface CurrentProject {
+  path: string
+  data: Record<string, any> // we’ll make this stricter later when we know the real JSON shape
+}
 
-export function useProjectStore() {
-  async function getAppDir(): Promise<string> {
-    const dir = await appLocalDataDir()
-    return dir.endsWith('/') || dir.endsWith('\\') ? dir.slice(0, -1) : dir
-  }
+export const useProjectStore = defineStore('project', () => {
+  const projects = ref<ProjectSummary[]>([])
+  const current = ref<CurrentProject | null>(null)
 
-  async function scanProjects() {
+  async function loadRecentProjects() {
+    const appDir = await appLocalDataDir()
+    const recentPath = await resolve(appDir, 'recent-projects.json')
+
     try {
-      const entries = await readDir('', { baseDir: BaseDirectory.AppLocalData })
-      const appDir = await getAppDir()
-      projects.value = entries
-        .filter(e => e.isDirectory)
-        .map(e => ({
-          name: e.name!,
-          path: e.name!
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    } catch (err) {
-      console.error('Failed to scan projects:', err)
-      projects.value = []
+      const text = await readTextFile(recentPath)
+      projects.value = JSON.parse(text)
+    } catch (e) {
+      projects.value = [] // first run or file missing → start empty
     }
   }
 
-  async function createProject(name: string) {
-    if (!name?.trim()) throw new Error('Project name cannot be empty')
+  async function saveRecentProjects() {
+    const appDir = await appLocalDataDir()
+    const recentPath = await resolve(appDir, 'recent-projects.json')
+    await writeTextFile(recentPath, JSON.stringify(projects.value, null, 2))
+  }
 
-    const safeName = name.trim().replace(/[^a-z0-9_-]/gi, '_')
-    if (!safeName) throw new Error('Invalid project name')
+  async function createFromTemplate(projectName: string) {
+    if (!projectName.trim()) return
 
-    try {
-      // Create folder + default files
-      await mkdir(safeName, { baseDir: BaseDirectory.AppLocalData, recursive: true })
-      await writeTextFile(`${safeName}/project.json`, JSON.stringify({ name: safeName }, null, 2), { baseDir: BaseDirectory.AppLocalData })
-      await writeTextFile(`${safeName}/config.json`, JSON.stringify({ statuses: [], notifications: [] }, null, 2), { baseDir: BaseDirectory.AppLocalData })
+    const selected = await open({
+      directory: true,
+      title: 'Select folder where the new project will be created',
+    })
 
-      // Set as current
-      currentProject.value = { name: safeName, path: safeName }
-      currentConfig.value = { statuses: [], notifications: [] }
+    if (selected === null) return // user cancelled
 
-      await scanProjects()
-    } catch (err: any) {
-      console.error('createProject failed:', err)
-      throw new Error(`Failed to create project: ${err.message || err}`)
+    const projectPath = await resolve(selected as string, projectName)
+
+    if (await exists(projectPath)) {
+      throw new Error(`A folder named "${projectName}" already exists there. Pick another name or location.`)
+    }
+
+    await create(projectPath)
+
+    // ────── YOUR TEMPLATE STARTS HERE ──────
+    const template = {
+      name: projectName,
+      created: new Date().toISOString(),
+      govData: {
+        title: projectName,
+        agencies: [],
+        regulations: {},
+        metadata: {}
+      }
+    }
+    // ─────────────────────────────────────
+
+    const dataFile = await resolve(projectPath, 'govbuilder.json')
+    await writeTextFile(dataFile, JSON.stringify(template, null, 2))
+
+    const summary: ProjectSummary = { name: projectName, path: projectPath }
+    projects.value.unshift(summary)         // newest on top
+    await saveRecentProjects()
+
+    current.value = { path: projectPath, data: template }
+  }
+
+  async function loadProject(path: string) {
+    const dataFile = await resolve(path, 'govbuilder.json')
+
+    if (!(await exists(dataFile))) {
+      throw new Error('Not a valid GovBuilder project (missing govbuilder.json)')
+    }
+
+    const text = await readTextFile(dataFile)
+    const data = JSON.parse(text)
+
+    current.value = { path, data }
+
+    // Auto-add to recent list if it isn’t already there
+    if (!projects.value.some(p => p.path === path)) {
+      const name = data.name || await basename(path)
+      projects.value.unshift({ name, path })
+      await saveRecentProjects()
     }
   }
 
-  async function loadProject(folder: string) {
-    try {
-      const metaText = await readTextFile(`${folder}/project.json`, { baseDir: BaseDirectory.AppLocalData })
-      const meta = JSON.parse(metaText)
-      currentProject.value = { name: meta.name ?? folder, path: folder }
-
-      // Load config.json into reactive ref
-      const configText = await readTextFile(`${folder}/config.json`, { baseDir: BaseDirectory.AppLocalData })
-      currentConfig.value = JSON.parse(configText)
-    } catch (err: any) {
-      console.error('loadProject failed:', err)
-      throw err
-    }
+  async function saveCurrent() {
+    if (!current.value) return
+    const dataFile = await resolve(current.value.path, 'govbuilder.json')
+    await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
   }
-
-  async function saveConfig() {
-    if (!currentProject.value) return
-    await writeTextFile(
-      `${currentProject.value.path}/config.json`,
-      JSON.stringify(currentConfig.value, null, 2),
-      { baseDir: BaseDirectory.AppLocalData }
-    )
-  }
-
-  // Auto-save whenever currentConfig changes
-  watch(currentConfig, () => {
-    if (currentProject.value) saveConfig()
-  }, { deep: true })
-
-  const currentProjectName = computed(() => currentProject.value?.name ?? null)
 
   return {
-    // reactive state
-    currentProject: readonly(currentProject),
-    currentProjectName,
-    currentConfig,
-    projects: readonly(projects),
-
-    // actions
-    scanProjects,
-    createProject,
+    projects,
+    current,
+    scanProjects: loadRecentProjects, 
+    createFromTemplate,
     loadProject,
-    saveConfig
+    saveCurrent
   }
-}
+})

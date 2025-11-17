@@ -1,0 +1,9 @@
+/* src/assets/tailwind.css */
+@import "tailwindcss";
+
+/* Global defaults – @apply works perfectly now */
+@layer base {
+  body {
+    @apply bg-gray-50 antialiased;
+  }
+}

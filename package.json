@@ -7,21 +7,27 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.9.0",
     "@tauri-apps/plugin-dialog": "^2.4.2",
     "@tauri-apps/plugin-fs": "^2.4.4",
     "@tauri-apps/plugin-opener": "^2",
-    "tailwind": "^4.0.0",
+    "pinia": "^3.0.4",
     "vue": "^3.5.13",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
     "@tauri-apps/cli": "^2",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^5.2.1",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
     "vue-tsc": "^2.1.10"

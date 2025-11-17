@@ -1,3 +1,4 @@
+// src/stores/projectStore.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
@@ -30,7 +31,6 @@ export const useProjectStore = defineStore('project', () => {
   const current = ref<CurrentProject | null>(null)
   const projectsRoot = ref<string | null>(null)
 
-  // Load saved root folder
   async function loadSettings() {
     const appDir = await appLocalDataDir()
     const settingsPath = await resolve(appDir, 'settings.json')
@@ -41,7 +41,6 @@ export const useProjectStore = defineStore('project', () => {
     }
   }
 
-  // Save root folder
   async function saveSettings() {
     const appDir = await appLocalDataDir()
     const settingsPath = await resolve(appDir, 'settings.json')
@@ -53,58 +52,61 @@ export const useProjectStore = defineStore('project', () => {
     await saveSettings()
     await scanProjects()
   }
-async function chooseProjectsRoot() {
-  const selected = await open({
-    directory: true,
-    multiple: false,
-    title: 'Select your GovBuilder projects folder',
-    defaultPath: await documentDir(),
-  })
 
-  if (selected) {
-    await setProjectsRoot(selected as string)   // reuse the existing setter
+  async function chooseProjectsRoot() {
+    const selected = await open({
+      directory: true,
+      multiple: false,
+      title: 'Select your GovBuilder projects folder',
+      defaultPath: await documentDir(),
+    })
+    if (selected) {
+      await setProjectsRoot(selected as string)
+    }
   }
-}
-  // Scan root folder for valid projects
+
   async function scanProjects() {
     await loadSettings()
-    projects.value = []
+    projects.value = [] // Clear old list
 
     if (!projectsRoot.value) return
 
     try {
       const entries = await readDir(projectsRoot.value)
-      const promises = entries
-        .filter(e => e.isDirectory)
-        .map(async (dir) => {
-          const projPath = await resolve(projectsRoot.value!, dir.name!)
-          const configPath = await resolve(projPath, 'govbuilder.json')
-          if (await exists(configPath)) {
-            const text = await readTextFile(configPath)
-            let data
-            try { data = JSON.parse(text) } catch { return null }
-            return {
-              name: data.name || dir.name || 'Untitled',
-              path: projPath,
-              created: data.created,
-            }
-          }
-          return null
-        })
+      const validProjects: ProjectSummary[] = []
 
-      const found = (await Promise.all(promises)).filter(Boolean) as ProjectSummary[]
-      found.sort((a, b) => {
-        const ta = new Date(a.created || 0).getTime()
-        const tb = new Date(b.created || 0).getTime()
-        return tb - ta || a.name.localeCompare(b.name)
-      })
-      projects.value = found
+      for (const entry of entries) {
+        if (!entry.isDirectory) continue
+        const projPath = await resolve(projectsRoot.value!, entry.name!)
+        const configPath = await resolve(projPath, 'govbuilder.json')
+
+        if (await exists(configPath)) {
+          try {
+            const text = await readTextFile(configPath)
+            const data = JSON.parse(text)
+            validProjects.push({
+              name: data.name || entry.name!,
+              path: projPath,
+              created: data.created
+            })
+          } catch (err) {
+            console.warn('Invalid project:', projPath)
+          }
+        }
+      }
+
+      validProjects.sort((a, b) =>
+        (b.created ? new Date(b.created).getTime() : 0) -
+        (a.created ? new Date(a.created).getTime() : 0)
+      )
+
+      projects.value = validProjects
     } catch (err) {
       console.error('Scan failed:', err)
+      projects.value = []
     }
   }
 
-  // Create a new project inside the root folder
   async function createProject(projectName: string) {
     if (!projectName.trim()) throw new Error('Project name is required')
     if (!projectsRoot.value) throw new Error('Projects folder not set')
@@ -137,7 +139,7 @@ async function chooseProjectsRoot() {
       created: template.created,
     }
 
-    projects.value.unshift(summary) // newest on top
+    projects.value.unshift(summary)
     current.value = { path: projectPath, data: template }
   }
 
@@ -157,15 +159,15 @@ async function chooseProjectsRoot() {
     await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
   }
 
-return {
-  projects,
-  current,
-  projectsRoot,
-  scanProjects,
-  createProject,
-  loadProject,
-  saveCurrent,
-  setProjectsRoot,     
-  chooseProjectsRoot,    
-}
+  return {
+    projects,
+    current,
+    projectsRoot,
+    scanProjects,
+    createProject,
+    loadProject,
+    saveCurrent,
+    setProjectsRoot,
+    chooseProjectsRoot,
+  }
 })

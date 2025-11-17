@@ -21,12 +21,14 @@
     "pinia": "^3.0.4",
     "uuid": "^13.0.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.17",
     "@tauri-apps/cli": "^2",
     "@types/node": "^24.10.1",
+    "@types/vuedraggable": "^2.23.2",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",

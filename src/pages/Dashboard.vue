@@ -1,52 +1,138 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-8">
-    <div class="max-w-7xl mx-auto">
-      <!-- Project title -->
-      <h1 class="text-5xl font-bold text-gray-800 mb-2">
-        {{ currentProjectName || 'No project selected' }}
-      </h1>
-      <p class="text-xl text-gray-600 mb-12">Click a section to edit</p>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+      <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <nav class="text-sm text-slate-500 mb-2">
+              <button @click="router.back()" class="hover:text-slate-700 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Projects
+              </button>
+            </nav>
+            <h1 class="text-4xl font-bold text-slate-900">
+              {{ currentProjectName || 'Loading...' }}
+            </h1>
+            <p class="text-lg text-slate-600 mt-2">Configure your government workflow templates</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
+              <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Active Project
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
 
-      <!-- Section cards -->
+    <!-- Main Grid -->
+    <main class="max-w-7xl mx-auto px-6 py-12">
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <!-- Case Statuses -->
         <router-link
           to="/statuses"
-          class="group flex flex-col items-center justify-center bg-white rounded-3xl shadow-lg p-16 hover:shadow-2xl hover:-translate-y-3 transition-all"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 hover:border-blue-300"
         >
-          <div class="text-9xl mb-6 group-hover:scale-110 transition">📊</div>
-          <h2 class="text-4xl font-bold text-gray-800">Statuses</h2>
-          <p class="mt-4 text-lg text-gray-600 text-center">
-            Edit status list, colors, icons, order…
-          </p>
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition"></div>
+          <div class="p-10 text-center relative">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">Case Statuses</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Define statuses like "In Review", "Approved", notifications, and Liquid templates
+            </p>
+          </div>
+          <div class="bg-blue-50 text-blue-700 px-6 py-4 text-sm font-medium border-t border-blue-100">
+            Edit Statuses →
+          </div>
         </router-link>
 
-        <!-- Future sections -->
-        <div
-          class="flex flex-col items-center justify-center bg-gray-100 rounded-3xl p-16 opacity-60"
+        <!-- License Statuses -->
+        <router-link
+          to="/license-statuses"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
         >
-          <div class="text-9xl mb-6">🔜</div>
-          <h2 class="text-4xl font-bold text-gray-600">Priorities</h2>
-        </div>
+          <div class="p-10 text-center">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">License Statuses</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Manage license-specific statuses and renewal workflows
+            </p>
+          </div>
+          <div class="bg-purple-50 text-purple-700 px-6 py-4 text-sm font-medium border-t border-purple-100">
+            Coming Soon
+          </div>
+        </router-link>
 
-        <div
-          class="flex flex-col items-center justify-center bg-gray-100 rounded-3xl p-16 opacity-60"
+        <!-- Case Workflows -->
+        <router-link
+          to="/case-workflows"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
         >
-          <div class="text-9xl mb-6">🔜</div>
-          <h2 class="text-4xl font-bold text-gray-600">Categories</h2>
-        </div>
-      </div>
+          <div class="p-10 text-center">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">Case Workflows</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Automate status transitions, assignments, and notifications
+            </p>
+          </div>
+          <div class="bg-emerald-50 text-emerald-700 px-6 py-4 text-sm font-medium border-t border-emerald-100">
+            Coming Soon
+          </div>
+        </router-link>
 
-      <!-- Live config preview -->
-      <div class="mt-20">
-        <h2 class="text-3xl font-bold mb-6">Live config.json preview</h2>
-        <pre
-          class="bg-gray-900 text-green-400 p-8 rounded-2xl overflow-x-auto text-sm"
-        >{{ JSON.stringify(currentConfig, null, 2) }}</pre>
+        <!-- License Workflows -->
+        <router-link
+          to="/license-workflows"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
+        >
+          <div class="p-10 text-center">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">License Workflows</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Set up renewal reminders, expirations, and compliance flows
+            </p>
+          </div>
+          <div class="bg-amber-50 text-amber-700 px-6 py-4 text-sm font-medium border-t border-amber-100">
+            Coming Soon
+          </div>
+        </router-link>
+
+        <!-- Inspection Types -->
+        <router-link
+          to="/inspection-types"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
+        >
+          <div class="p-10 text-center">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">Inspection Types</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Define inspection categories, required docs, and scheduling rules
+            </p>
+          </div>
+          <div class="bg-rose-50 text-rose-700 px-6 py-4 text-sm font-medium border-t border-rose-100">
+            Coming Soon
+          </div>
+        </router-link>
+
+        <!-- Accounting Details -->
+        <router-link
+          to="/accounting"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
+        >
+          <div class="p-10 text-center">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">Accounting Details</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Fee schedules, payment types, refund rules, and GL codes
+            </p>
+          </div>
+          <div class="bg-indigo-50 text-indigo-700 px-6 py-4 text-sm font-medium border-t border-indigo-100">
+            Coming Soon
+          </div>
+        </router-link>
       </div>
-    </div>
+    </main>
   </div>
 </template>
-
 <script setup lang="ts">
 /* ------------------------------------------------------------------ */
 /*  Imports                                                            */

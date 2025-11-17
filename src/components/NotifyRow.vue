@@ -1,93 +1,111 @@
 <template>
-  <div class="space-y-4">
-    <!-- Toggle -->
-    <ToggleRow :label="label" v-model="enabled" />
+  <div class="space-y-5">
+    <!-- Main Toggle + Label -->
+    <div class="flex items-center justify-between">
+      <label class="text-sm font-semibold text-slate-700 select-none">
+        {{ label }}
+      </label>
+      <Toggle v-model="enabled" />
+    </div>
 
-    <!-- Email body area – only when toggle is ON -->
-    <transition name="fade">
-      <div v-if="enabled" class="ml-10 space-y-3">
-        <!-- Use default body checkbox -->
-        <label class="flex items-center gap-2 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            v-model="useDefault"
-            class="w-5 h-5 text-blue-600 rounded"
+    <!-- Custom Email Body (only appears when enabled) -->
+    <Transition name="fade-slide">
+      <div v-if="enabled" class="space-y-4 pl-1">
+        <div class="relative">
+          <textarea
+            v-model="localBody"
+            @focus="ensureTemplate"
+            @blur="onBlur"
+            placeholder="Your custom email content..."
+            rows="10"
+            class="w-full px-5 py-4 font-mono text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-vertical placeholder-slate-400"
           />
-          <span class="text-sm">Use default email body</span>
-        </label>
+          <!-- Template badge -->
+          <div class="absolute top-4 right-4">
+            <span class="text-xs font-medium text-slate-500 bg-slate-200/90 px-3 py-1.5 rounded-full backdrop-blur">
+              &lt;emailTemplate&gt;
+            </span>
+          </div>
+        </div>
 
-        <!-- Email body textarea -->
-        <textarea
-          v-model="emailBody"
-          :placeholder="useDefault ? defaultBody : 'Write the email body that will be sent…'"
-          rows="5"
-          class="w-full p-3 border rounded-lg text-sm resize-none font-mono"
-        />
+        <!-- Footer info -->
+        <div class="flex justify-between items-center text-xs text-slate-500">
+          <span v-if="localBody.trim()">
+            {{ localBody.length }} characters
+          </span>
+          <span v-else class="italic">
+            Template auto-inserted on first edit
+          </span>
+          <span class="font-medium text-blue-600">
+            HTML supported
+          </span>
+        </div>
       </div>
-    </transition>
+    </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-/* ------------------------------------------------------------------ */
-/*  Imports                                                            */
-/* ------------------------------------------------------------------ */
-import { computed, watch } from 'vue'
-import ToggleRow from '@/components/ToggleRow.vue'
+import { ref, computed, watch, nextTick } from 'vue'
+import Toggle from '@/components/Toggle.vue'
 
-/* ------------------------------------------------------------------ */
-/*  Default email body (edit once, used everywhere)                   */
-/* ------------------------------------------------------------------ */
-const DEFAULT_BODY = `{{CaseType}} #{{Number}} is now {{Status}}`
-
-/* ------------------------------------------------------------------ */
-/*  Props (creates the `props` variable)                              */
-/* ------------------------------------------------------------------ */
 const props = defineProps<{
   label: string
-  modelValue: boolean          // toggle
-  emailBody: string            // <-- now the body, not recipients
-  useDefault: boolean
+  modelValue: boolean
+  emailBody?: string | null
 }>()
 
-/* ------------------------------------------------------------------ */
-/*  Emits                                                             */
-/* ------------------------------------------------------------------ */
 const emit = defineEmits<{
-  (e: 'update:modelValue', v: boolean): void
-  (e: 'update:emailBody', v: string): void
-  (e: 'update:useDefault', v: boolean): void
+  'update:modelValue': [value: boolean]
+  'update:email-body': [value: string | undefined]
 }>()
 
-/* ------------------------------------------------------------------ */
-/*  Two‑way bindings                                                  */
-/* ------------------------------------------------------------------ */
 const enabled = computed({
   get: () => props.modelValue,
-  set: v => emit('update:modelValue', v),
+  set: (v) => emit('update:modelValue', v)
 })
 
-const emailBody = computed({
-  get: () => props.emailBody,
-  set: v => emit('update:emailBody', v),
-})
+const localBody = ref<string>(props.emailBody ?? '')
 
-const useDefault = computed({
-  get: () => props.useDefault,
-  set: v => emit('update:useDefault', v),
-})
+// Auto-insert <emailTemplate> on first focus
+function ensureTemplate(e: FocusEvent) {
+  if (!localBody.value.trim()) {
+    const template = '<emailTemplate></emailTemplate>'
+    localBody.value = template
 
-/* ------------------------------------------------------------------ */
-/*  Fill with default when checkbox is ticked                         */
-/* ------------------------------------------------------------------ */
-watch(useDefault, (val) => {
-  if (val) emailBody.value = DEFAULT_BODY
+    nextTick(() => {
+      const el = e.target as HTMLTextAreaElement
+      const pos = template.indexOf('>') + 1
+      el.setSelectionRange(pos, pos)
+      el.focus()
+    })
+  }
+}
+
+function onBlur() {
+  const trimmed = localBody.value.trim()
+  if (!trimmed || trimmed === '<emailTemplate></emailTemplate>') {
+    localBody.value = ''
+    emit('update:email-body', undefined)
+  } else {
+    emit('update:email-body', localBody.value)
+  }
+}
+
+// Sync when parent updates
+watch(() => props.emailBody, (newVal) => {
+  localBody.value = newVal ?? ''
 })
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active { transition: opacity .2s, transform .2s; }
-.fade-enter-from,
-.fade-leave-to { opacity: 0; transform: translateY(-8px); }
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.22s ease-out;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
 </style>

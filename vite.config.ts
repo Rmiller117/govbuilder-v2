@@ -34,4 +34,9 @@ export default defineConfig(() => ({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  components: {
+    dirs: ['src/components'], // Auto-import from here
+    extensions: ['vue'],
+    dts: true,
+  }
 }));

@@ -1,25 +1,25 @@
-// src/stores/projectStore.ts
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import {
   appLocalDataDir,
-  basename,
   resolve,
   documentDir,
 } from '@tauri-apps/api/path'
-import { open } from '@tauri-apps/plugin-dialog'
 import {
-  create,      // ← for files only (we don't use this anymore)
   exists,
-  mkdir,       // ← NEW: for directories
+  mkdir,
+  readDir,
   readTextFile,
   writeTextFile,
 } from '@tauri-apps/plugin-fs'
+import { open } from '@tauri-apps/plugin-dialog'
 
 interface ProjectSummary {
   name: string
-  path: string // full absolute directory path
+  path: string
+  created?: string
 }
+
 interface CurrentProject {
   path: string
   data: Record<string, any>
@@ -28,99 +28,95 @@ interface CurrentProject {
 export const useProjectStore = defineStore('project', () => {
   const projects = ref<ProjectSummary[]>([])
   const current = ref<CurrentProject | null>(null)
+  const projectsRoot = ref<string | null>(null)
 
-  /* --------------------------------------------------------------
-   *  Recent-projects persistence (app-local data folder)
-   * ------------------------------------------------------------ */
-  async function loadRecentProjects() {
+  // Load saved root folder
+  async function loadSettings() {
     const appDir = await appLocalDataDir()
-    const recentPath = await resolve(appDir, 'recent-projects.json')
-    try {
-      const txt = await readTextFile(recentPath)
-      projects.value = JSON.parse(txt)
-    } catch {
-      projects.value = [] // first run or corrupted file
+    const settingsPath = await resolve(appDir, 'settings.json')
+    if (await exists(settingsPath)) {
+      const txt = await readTextFile(settingsPath)
+      const settings = JSON.parse(txt)
+      projectsRoot.value = settings.projectsRoot || null
     }
   }
 
-  async function saveRecentProjects() {
+  // Save root folder
+  async function saveSettings() {
     const appDir = await appLocalDataDir()
-    const recentPath = await resolve(appDir, 'recent-projects.json')
-    await writeTextFile(recentPath, JSON.stringify(projects.value, null, 2))
+    const settingsPath = await resolve(appDir, 'settings.json')
+    await writeTextFile(settingsPath, JSON.stringify({ projectsRoot: projectsRoot.value }, null, 2))
   }
 
-  /* --------------------------------------------------------------
-   *  Create a brand-new project (dialog → folder → JSON)
-   * ------------------------------------------------------------ */
-  async function createFromTemplate(projectName: string) {
-    if (!projectName.trim()) return
-
-    // 1. Let the user pick the *parent* folder (defaults to Documents)
-    const selected = await open({
-      directory: true,
-      multiple: false,
-      title: 'Select folder where the new project will be created',
-      defaultPath: await documentDir(),
-    })
-    if (!selected) return // cancelled
-
-    // 2. Build absolute paths
-    const projectPath = await resolve(selected as string, projectName)
-    const dataFile = await resolve(projectPath, 'govbuilder.json')
-
-    // 3. Guard: folder must not exist yet
-    if (await exists(projectPath)) {
-      throw new Error(
-        `A folder named "${projectName}" already exists there. Pick another name or location.`
-      )
-    }
-
-   async function createFromTemplate(projectName: string) {
-  if (!projectName.trim()) return
-
+  async function setProjectsRoot(path: string) {
+    projectsRoot.value = path
+    await saveSettings()
+    await scanProjects()
+  }
+async function chooseProjectsRoot() {
   const selected = await open({
     directory: true,
     multiple: false,
-    title: 'Select folder where the new project will be created',
+    title: 'Select your GovBuilder projects folder',
     defaultPath: await documentDir(),
   })
-  if (!selected) return
 
-  const projectPath = await resolve(selected as string, projectName)
-  const dataFile = await resolve(projectPath, 'govbuilder.json')
+  if (selected) {
+    await setProjectsRoot(selected as string)   // reuse the existing setter
+  }
+}
+  // Scan root folder for valid projects
+  async function scanProjects() {
+    await loadSettings()
+    projects.value = []
 
-  // Prevent overwrite
-  if (await exists(projectPath)) {
-    throw new Error(
-      `A folder named "${projectName}" already exists there. Pick another name or location.`
-    )
+    if (!projectsRoot.value) return
+
+    try {
+      const entries = await readDir(projectsRoot.value)
+      const promises = entries
+        .filter(e => e.isDirectory)
+        .map(async (dir) => {
+          const projPath = await resolve(projectsRoot.value!, dir.name!)
+          const configPath = await resolve(projPath, 'govbuilder.json')
+          if (await exists(configPath)) {
+            const text = await readTextFile(configPath)
+            let data
+            try { data = JSON.parse(text) } catch { return null }
+            return {
+              name: data.name || dir.name || 'Untitled',
+              path: projPath,
+              created: data.created,
+            }
+          }
+          return null
+        })
+
+      const found = (await Promise.all(promises)).filter(Boolean) as ProjectSummary[]
+      found.sort((a, b) => {
+        const ta = new Date(a.created || 0).getTime()
+        const tb = new Date(b.created || 0).getTime()
+        return tb - ta || a.name.localeCompare(b.name)
+      })
+      projects.value = found
+    } catch (err) {
+      console.error('Scan failed:', err)
+    }
   }
 
-  // ← THIS IS THE CRITICAL LINE (Tauri v2 way) ←
-  await mkdir(projectPath, { recursive: true })
-  // ───────────────────────────────────────────
+  // Create a new project inside the root folder
+  async function createProject(projectName: string) {
+    if (!projectName.trim()) throw new Error('Project name is required')
+    if (!projectsRoot.value) throw new Error('Projects folder not set')
 
-  const template = {
-    name: projectName,
-    created: new Date().toISOString(),
-govData: {
-  title: projectName,
-  agencies: [],
-  regulations: {},
-  metadata: {},
-  statuses: []   // ← ADD THIS
-}
-  }
+    const projectPath = await resolve(projectsRoot.value, projectName)
+    if (await exists(projectPath)) {
+      throw new Error(`A project named "${projectName}" already exists.`)
+    }
 
-  await writeTextFile(dataFile, JSON.stringify(template, null, 2))
+    await mkdir(projectPath, { recursive: true })
+    const dataFile = await resolve(projectPath, 'govbuilder.json')
 
-  const summary: ProjectSummary = { name: projectName, path: projectPath }
-  projects.value.unshift(summary)
-  await saveRecentProjects()
-  current.value = { path: projectPath, data: template }
-}
-
-    // 5. Write the starter JSON template
     const template = {
       name: projectName,
       created: new Date().toISOString(),
@@ -129,72 +125,47 @@ govData: {
         agencies: [],
         regulations: {},
         metadata: {},
-      },
+        statuses: []
+      }
     }
+
     await writeTextFile(dataFile, JSON.stringify(template, null, 2))
 
-    // 6. Update recent-list & current project
-    const summary: ProjectSummary = { name: projectName, path: projectPath }
+    const summary: ProjectSummary = {
+      name: projectName,
+      path: projectPath,
+      created: template.created,
+    }
+
     projects.value.unshift(summary) // newest on top
-    await saveRecentProjects()
     current.value = { path: projectPath, data: template }
   }
 
-  /* --------------------------------------------------------------
-   *  Load an existing project (adds to recent list if missing)
-   * ------------------------------------------------------------ */
   async function loadProject(path: string) {
     const dataFile = await resolve(path, 'govbuilder.json')
     if (!(await exists(dataFile))) {
       throw new Error('Not a valid GovBuilder project (missing govbuilder.json)')
     }
-
     const text = await readTextFile(dataFile)
     const data = JSON.parse(text)
-
     current.value = { path, data }
-
-    // Auto-add to recent list if it isn’t there already
-    if (!projects.value.some((p) => p.path === path)) {
-      const name = data.name || (await basename(path))
-      projects.value.unshift({ name, path })
-      await saveRecentProjects()
-    }
   }
 
-  /* --------------------------------------------------------------
-   *  Save the currently loaded project
-   * ------------------------------------------------------------ */
   async function saveCurrent() {
     if (!current.value) return
     const dataFile = await resolve(current.value.path, 'govbuilder.json')
     await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
   }
 
-  /* --------------------------------------------------------------
-   *  Helper used by Home.vue to refresh the list on mount
-   * ------------------------------------------------------------ */
-  async function scanProjects() {
-    await loadRecentProjects()
-  }
-
-  /* --------------------------------------------------------------
-   *  Helper used by Home.vue to add a project *without* a dialog
-   * ------------------------------------------------------------ */
-  function addProject(summary: ProjectSummary) {
-    // avoid duplicates
-    if (projects.value.some((p) => p.path === summary.path)) return
-    projects.value.unshift(summary)
-    saveRecentProjects()
-  }
-
-  return {
-    projects,
-    current,
-    scanProjects,
-    createFromTemplate,
-    loadProject,
-    saveCurrent,
-    addProject, // <-- new, used by Home.vue after manual folder creation
-  }
+return {
+  projects,
+  current,
+  projectsRoot,
+  scanProjects,
+  createProject,
+  loadProject,
+  saveCurrent,
+  setProjectsRoot,     
+  chooseProjectsRoot,    
+}
 })

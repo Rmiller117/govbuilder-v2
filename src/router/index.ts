@@ -4,6 +4,7 @@ import Statuses from "@/pages/Statuses.vue";
 import Dashboard from "@/pages/Dashboard.vue";
 import StatusDetail from "@/pages/StatusDetail.vue";
 import CaseWorkflows from "@/pages/CaseWorkflows.vue";
+import Accounting from "@/pages/Accounting.vue";
 
 const routes = [
   { path: "/", name: "Home", component: Home },
@@ -11,7 +12,8 @@ const routes = [
   { path: "/dashboard", name: "Dashboard", component: Dashboard },
   { path: "/statuses", name: "StatusesList", component: Statuses, },
   { path: "/statuses/:id", name: "StatusDetail", component: StatusDetail, },
-  { path: "/case-workflows", name: "CaseWorkflows", component: CaseWorkflows }
+  { path: "/case-workflows", name: "CaseWorkflows", component: CaseWorkflows },
+  { path: "/accounting", name: "Accounting", component: Accounting },
 ];
 
 export const router = createRouter({

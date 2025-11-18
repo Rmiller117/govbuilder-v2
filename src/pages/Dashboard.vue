@@ -50,6 +50,24 @@
           </div>
         </router-link>
 
+                <!-- Case Workflows -->
+        <router-link
+          to="/case-workflows"
+          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 hover:border-blue-300"
+        >
+                  <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition"></div>
+
+          <div class="p-10 text-center relative">
+            <h3 class="text-3xl font-bold text-slate-800 mb-3">Case Workflows</h3>
+            <p class="text-slate-600 text-base leading-relaxed">
+              Automate status transitions, assignments, and notifications
+            </p>
+          </div>
+          <div class="bg-blue-50 text-blue-700 px-6 py-4 text-sm font-medium border-t border-blue-100">
+            Edit Workflows →
+          </div>
+        </router-link>
+
         <!-- License Statuses -->
         <router-link
           to="/license-statuses"
@@ -62,22 +80,6 @@
             </p>
           </div>
           <div class="bg-purple-50 text-purple-700 px-6 py-4 text-sm font-medium border-t border-purple-100">
-            Coming Soon
-          </div>
-        </router-link>
-
-        <!-- Case Workflows -->
-        <router-link
-          to="/case-workflows"
-          class="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-slate-200 opacity-75"
-        >
-          <div class="p-10 text-center">
-            <h3 class="text-3xl font-bold text-slate-800 mb-3">Case Workflows</h3>
-            <p class="text-slate-600 text-base leading-relaxed">
-              Automate status transitions, assignments, and notifications
-            </p>
-          </div>
-          <div class="bg-emerald-50 text-emerald-700 px-6 py-4 text-sm font-medium border-t border-emerald-100">
             Coming Soon
           </div>
         </router-link>

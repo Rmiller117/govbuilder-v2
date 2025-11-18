@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { router } from './router'
 import { createPinia } from 'pinia'
+import { MotionPlugin } from '@vueuse/motion'
 if (!globalThis.crypto) {
   globalThis.crypto = {
     randomUUID: () => {
@@ -15,4 +16,4 @@ if (!globalThis.crypto) {
 }
 import '@/assets/tailwind.css'
 
-createApp(App).use(router).use(createPinia()).mount('#app')
+createApp(App).use(MotionPlugin).use(router).use(createPinia()).mount('#app')

@@ -59,11 +59,7 @@
             </div>
           </div>
         </div>
-      </form>
-    </main>
-  </div>
-
-        <!-- Workflow Selector -->
+                <!-- Workflow Selector -->
 <!-- In InspectionTypeDetail.vue -->
 <div class="border-t pt-8">
   <label class="block text-sm font-semibold text-gray-700 mb-3">Inspection Notification Workflow</label>
@@ -77,6 +73,9 @@
     Manage workflows in <router-link to="/inspection-workflows" class="text-purple-600 underline">Inspection Workflows</router-link>
   </p>
 </div>
+      </form>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">

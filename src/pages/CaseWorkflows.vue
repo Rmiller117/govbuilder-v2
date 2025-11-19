@@ -12,15 +12,18 @@
         </div>
 
         <div class="flex items-center gap-4">
-          <button @click="subtypesModalOpen = true" class="px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition">
-            Manage Subtypes
-          </button>
-          <button @click="openNewType" class="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition">
-            + New Case Type
-          </button>
-          <button @click="addWorkflow" class="px-5 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
-            + New Workflow
-          </button>
+<button @click="subtypesModalOpen = true" class="px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition flex items-center gap-2">
+  <CogIcon class="w-5 h-5" />
+  Manage Subtypes
+</button>
+<button @click="openNewType" class="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
+  <PlusIcon class="w-5 h-5" />
+  New Case Type
+</button>
+<button @click="addWorkflow" class="px-5 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
+  <PlusIcon class="w-5 h-5" />
+  New Workflow
+</button>
         </div>
       </div>
     </header>
@@ -35,14 +38,15 @@
             :key="type.id"
             class="relative bg-white rounded-2xl shadow-md border border-slate-200 transition-all duration-300 hover:shadow-lg"
           >
-            <!-- Trash (hover right side only) -->
+            <!-- TrashIcon (hover right side only) -->
             <div class="absolute inset-y-0 right-0 w-32 flex items-center justify-center pointer-events-none">
-              <button
-                @click.stop="deleteCaseType(type.id)"
-                class="pointer-events-auto opacity-0 hover:opacity-100 transition-opacity duration-200"
-              >
-                Trash
-              </button>
+<button
+  @click.stop="deleteCaseType(type.id)"
+  class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+  title="Delete case type"
+>
+  <TrashIcon class="w-5 h-5" />
+</button>
             </div>
 
             <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-slate-50 transition">
@@ -88,14 +92,15 @@
             :key="wf.id"
             class="relative bg-purple-50 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg"
           >
-            <!-- Trash (hover right side only) -->
+            <!-- TrashIcon (hover right side only) -->
             <div class="absolute inset-y-0 right-0 w-28 flex items-center justify-center pointer-events-none">
-              <button
-                @click.stop="deleteWorkflow(wf.id)"
-                class="pointer-events-auto opacity-0 hover:opacity-100 transition-opacity duration-200"
-              >
-                Trash
-              </button>
+ <button
+  @click.stop="deleteWorkflow(wf.id)"
+  class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+  title="Delete workflow"
+>
+  <TrashIcon class="w-5 h-5" />
+</button>
             </div>
 
             <div @click="openWorkflowEditor(wf)" class="pl-8 pr-36 py-6 cursor-pointer hover:bg-purple-100 transition">
@@ -183,9 +188,9 @@
                     <div class="mt-4 flex flex-wrap gap-3">
                       <div v-for="subId in editingType.subtypes" :key="subId" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                         <span>{{ subtypeName(subId) }}</span>
-                        <button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)" class="text-blue-600 hover:text-blue-800">
-                          Trash
-                        </button>
+<button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)" class="text-blue-600 hover:text-blue-800">
+  <TrashIcon class="w-4 h-4" />
+</button>
                       </div>
                     </div>
                   </div>
@@ -262,14 +267,12 @@
                     <template #item="{ element: step }">
                       <div class="p-5 bg-white rounded-xl shadow-md border border-purple-200 flex items-center justify-between mb-4 handle cursor-move select-none">
                         <div class="flex items-center gap-5">
-                          <svg class="w-6 h-6 text-purple-600 handle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                          </svg>
+<GripVerticalIcon class="w-6 h-6 text-purple-600 handle" />
                           <span class="text-lg font-semibold text-purple-900">{{ statusTitle(step.statusId) }}</span>
                         </div>
-                        <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
-                          Trash
-                        </button>
+<button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
+  <TrashIcon class="w-5 h-5" />
+</button>
                       </div>
                     </template>
                   </draggable>
@@ -323,9 +326,9 @@
                 <div class="flex flex-wrap gap-3">
                   <div v-for="sub in sortedSubtypes" :key="sub.id" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
                     <span>{{ sub.name }}</span>
-                    <button @click="removeSubtype(sub.id)" class="text-emerald-600 hover:text-emerald-800">
-                      Trash
-                    </button>
+<button @click="removeSubtype(sub.id)" class="text-emerald-600 hover:text-emerald-800">
+  <TrashIcon class="w-4 h-4" />
+</button>
                   </div>
                 </div>
                 <div class="flex justify-end mt-8">
@@ -371,6 +374,15 @@ import { useStatusStore } from '@/stores/statusStore'
 import { useCaseSubTypeStore } from '@/stores/caseSubTypeStore'
 import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
 import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
+
+import { 
+  ArrowLeftIcon, 
+  PlusIcon, 
+  DocumentTextIcon,
+  TrashIcon,
+  CogIcon,
+  GripVerticalIcon
+} from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const statusStore = useStatusStore()

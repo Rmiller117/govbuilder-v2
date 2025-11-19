@@ -11,19 +11,6 @@
           </button>
           <h1 class="text-3xl font-bold text-gray-900">Inspection Types</h1>
         </div>
-
-        <!-- Both buttons side-by-side at the top -->
-        <div class="flex items-center gap-4">
-          <router-link
-            to="/inspection-types/new"
-            class="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Inspection Type
-          </router-link>
-        </div>
       </div>
     </header>
 
@@ -32,6 +19,17 @@
       <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Inspection Types</h2>
+                  <div class="flex items-center gap-4">
+          <router-link
+            to="/inspection-types/new"
+            class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Inspection Type
+          </router-link>
+        </div>
         </div>
 
         <!-- Empty State -->

@@ -70,7 +70,7 @@
     </option>
   </select>
   <p class="text-sm text-gray-600 mt-3">
-    Manage workflows in <router-link to="/inspection-workflows" class="text-purple-600 underline">Inspection Workflows</router-link>
+    Manage workflows in <router-link to="/inspection-types" class="text-purple-600 underline">Inspection Types</router-link>
   </p>
 </div>
       </form>

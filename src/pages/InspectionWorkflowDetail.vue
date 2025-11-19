@@ -21,6 +21,7 @@
 
     <main class="max-w-6xl mx-auto px-6 py-12">
       <form @submit.prevent="handleSave" class="bg-white rounded-3xl shadow-xl p-8 space-y-8">
+        <!-- Workflow name section unchanged -->
         <div>
           <label class="block text-sm font-semibold text-gray-700 mb-3">
             Workflow Name <span class="text-red-500">*</span>
@@ -33,38 +34,64 @@
           />
         </div>
 
+        <!-- Tabs for status notifications -->
         <div class="space-y-10">
           <h2 class="text-2xl font-bold text-gray-800">Notification Settings by Status</h2>
 
-          <div v-for="status in statusKeys" :key="status" class="border rounded-2xl p-6 bg-gray-50">
+          <!-- Tab headers with horizontal scrolling -->
+          <div class="overflow-x-auto pb-2">
+            <ul class="flex space-x-4 min-w-max border-b border-gray-300 mb-4">
+              <li v-for="status in statusKeys" :key="status"
+                  @click="activeTab = status"
+                  :class="[
+                    'px-4 py-2 cursor-pointer whitespace-nowrap',
+                    activeTab === status ? 'border-b-2 border-purple-600 text-purple-600 font-semibold' : 'text-gray-700'
+                  ]">
+                {{ formatStatus(status) }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Tab content -->
+          <div v-show="activeTab" class="border rounded-2xl p-6 bg-gray-50">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800">{{ formatStatus(status) }}</h3>
-              <ToggleRow label="Enable Notifications" v-model="getConfig(status).enabled" />
+              <h3 class="text-lg font-semibold text-gray-800">{{ formatStatus(activeTab) }}</h3>
             </div>
 
             <Transition name="fade">
-              <div v-if="getConfig(status).enabled" class="space-y-8 pl-8">
-                <!-- Switches -->
+              <div class="space-y-8 pl-8">
+                <!-- Simplified notification switches -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ToggleRow label="Append Assign Team Members" v-model="getConfig(status).appendAssignTeamMembers" />
-                  <ToggleRow label="Notify Assigned Team Members" v-model="getConfig(status).notifyAssignedTeamMembers" />
-                  <ToggleRow label="Notify Other Team Members" v-model="getConfig(status).notifyOtherTeamMembers" />
-                  <ToggleRow label="Notify Applicant" v-model="getConfig(status).notifyApplicant" />
-                  <ToggleRow label="Notify All Contacts" v-model="getConfig(status).notifyAllContacts" />
-                  <ToggleRow label="Notify Other Recipient" v-model="getConfig(status).notifyOtherRecipient" />
-                  <ToggleRow label="Do Not Send Mail When Applicant and Approver are Same" v-model="getConfig(status).doNotSendMailWhenApplicantAndApproverSame" />
-                  <ToggleRow label="Attach Permit Types" v-model="getConfig(status).attachPermitTypes" />
-                  <ToggleRow label="Attach Form Letters" v-model="getConfig(status).attachFormLetters" />
+                  <ToggleRow 
+                    label="Notify Assigned Team Members" 
+                    v-model="currentConfig.notifyAssignedTeamMembers" 
+                  />
+                  <ToggleRow 
+                    label="Notify Other Team Members" 
+                    v-model="currentConfig.notifyOtherTeamMembers" 
+                  />
+                  <ToggleRow 
+                    label="Notify Applicant" 
+                    v-model="currentConfig.notifyApplicant" 
+                  />
+                  <ToggleRow 
+                    label="Notify All Contacts" 
+                    v-model="currentConfig.notifyAllContacts" 
+                  />
+                  <ToggleRow 
+                    label="Notify Other Recipient" 
+                    v-model="currentConfig.notifyOtherRecipient" 
+                  />
                 </div>
 
                 <!-- Email Templates — only show if the notify switch is ON -->
                 <template v-for="key in notifyKeys" :key="key">
-                  <div v-if="getConfig(status)[key]" class="mt-6">
+                  <div v-if="currentConfig[key]" class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       {{ notifyLabels[key] }} Email Template
                     </label>
                     <textarea
-                      v-model="getConfig(status)[key + 'Template']"
+                      v-model="currentConfig[key + 'Template']"
                       rows="12"
                       class="w-full font-mono text-sm p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 resize-y"
                     ></textarea>
@@ -74,13 +101,14 @@
             </Transition>
           </div>
         </div>
+
       </form>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInspectionWorkflowStore, type InspectionWorkflow } from '@/stores/inspectionWorkflowStore'
 import ToggleRow from '@/components/ToggleRow.vue'
@@ -93,7 +121,9 @@ const id = computed(() => route.params.id as string)
 const isNew = computed(() => route.path.endsWith('/new'))
 
 const form = ref<Partial<InspectionWorkflow>>({ name: '' })
-const config = ref<Record<string, any>>({})
+// Use a local config object that's separate from the global one
+const localConfigs = ref<Record<string, any>>({})
+const activeTab = ref<string>('AcceptedInvite')
 
 const statusKeys = [
   'AcceptedInvite','Approved','CancelledByAdmin','CancelledByUser',
@@ -117,17 +147,14 @@ const notifyLabels: Record<typeof notifyKeys[number], string> = {
   notifyOtherRecipient: 'Other Recipient',
 }
 
+// Simplified default config with only notification switches
 const defaultConfig = {
   enabled: false,
-  appendAssignTeamMembers: false,
   notifyAssignedTeamMembers: false,
   notifyOtherTeamMembers: false,
   notifyApplicant: false,
   notifyAllContacts: false,
   notifyOtherRecipient: false,
-  doNotSendMailWhenApplicantAndApproverSame: false,
-  attachPermitTypes: false,
-  attachFormLetters: false,
   notifyAssignedTeamMembersTemplate: '<emailTemplate></emailTemplate>',
   notifyOtherTeamMembersTemplate: '<emailTemplate></emailTemplate>',
   notifyApplicantTemplate: '<emailTemplate></emailTemplate>',
@@ -135,19 +162,35 @@ const defaultConfig = {
   notifyOtherRecipientTemplate: '<emailTemplate></emailTemplate>',
 }
 
-function getConfig(key: string) {
-  if (!config.value[key]) {
-    config.value[key] = { ...defaultConfig }
-  }
-  return config.value[key]
+function getEmptyConfig() {
+  return JSON.parse(JSON.stringify(defaultConfig))
 }
+
+// Computed property to get the current config for active tab
+const currentConfig = computed({
+  get() {
+    if (!localConfigs.value[activeTab.value]) {
+      localConfigs.value[activeTab.value] = getEmptyConfig()
+    }
+    return localConfigs.value[activeTab.value]
+  },
+  set(value) {
+    if (!localConfigs.value[activeTab.value]) {
+      localConfigs.value[activeTab.value] = getEmptyConfig()
+    }
+    Object.assign(localConfigs.value[activeTab.value], value)
+  }
+})
 
 function formatStatus(key: string) {
   return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()
 }
 
 onMounted(() => {
-  statusKeys.forEach(key => getConfig(key))
+  // Initialize all status configs
+  statusKeys.forEach(key => {
+    localConfigs.value[key] = getEmptyConfig()
+  })
 
   if (!isNew.value) {
     const existing = list.value.find(w => w.id === id.value)
@@ -156,10 +199,12 @@ onMounted(() => {
       return
     }
     form.value = { ...existing }
+    
+    // Load saved configurations for each status
     statusKeys.forEach(key => {
       const saved = (existing as any)[key]
       if (saved) {
-        config.value[key] = { ...defaultConfig, ...saved }
+        localConfigs.value[key] = { ...getEmptyConfig(), ...saved }
       }
     })
   }
@@ -175,7 +220,7 @@ async function handleSave() {
     id: isNew.value ? undefined : id.value,
     name: form.value.name.trim(),
     ...Object.fromEntries(
-      Object.entries(config.value)
+      Object.entries(localConfigs.value)
         .map(([k, c]: [string, any]) => {
           if (!c.enabled) return [k, undefined]
           const cleaned = { ...c }
@@ -190,7 +235,7 @@ async function handleSave() {
   }
 
   await saveWorkflow(payload as InspectionWorkflow)
-  router.push('/inspection-workflows')
+  router.push('/inspection-types')
 }
 </script>
 
@@ -203,5 +248,12 @@ async function handleSave() {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* Add responsive tab container */
+@media (max-width: 768px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>

@@ -46,7 +46,6 @@ export function useInspectionTypeStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this inspection type?')) return
     types.value = types.value.filter(t => t.id !== id)
     await projectStore.saveCurrent()
   }

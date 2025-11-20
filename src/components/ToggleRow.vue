@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Toggle from './Toggle.vue'   // ← THIS LINE WAS MISSING
+import Toggle from './Toggle.vue'  
 
 defineProps<{
   label: string
@@ -15,7 +15,6 @@ const emit = defineEmits<{
   <div class="flex items-center justify-between py-3">
     <div class=" flex items-center gap-3">
       <span class="text-lg font-medium text-gray-800">{{ label }}</span>
-      <span class="text-gray-400 cursor-help text-sm" title="More info coming soon">ⓘ</span>
     </div>
     <Toggle
       :modelValue="modelValue"

@@ -267,7 +267,7 @@
                     <template #item="{ element: step }">
                       <div class="p-5 bg-white rounded-xl shadow-md border border-purple-200 flex items-center justify-between mb-4 handle cursor-move select-none">
                         <div class="flex items-center gap-5">
-<GripVerticalIcon class="w-6 h-6 text-purple-600 handle" />
+<Bars3Icon class="w-6 h-6 text-purple-600 handle" />
                           <span class="text-lg font-semibold text-purple-900">{{ statusTitle(step.statusId) }}</span>
                         </div>
 <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
@@ -376,12 +376,10 @@ import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
 import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
 
 import { 
-  ArrowLeftIcon, 
   PlusIcon, 
-  DocumentTextIcon,
   TrashIcon,
   CogIcon,
-  GripVerticalIcon
+  Bars3Icon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()

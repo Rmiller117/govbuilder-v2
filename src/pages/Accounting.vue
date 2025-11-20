@@ -10,10 +10,16 @@
           <h1 class="text-3xl font-bold text-gray-900">Accounting Details</h1>
         </div>
 
-        <button @click="openModal()" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
-          <PlusIcon class="w-5 h-5" />
-          Add Detail
-        </button>
+        <div class="flex gap-4">
+<button @click="generateGovbuiltImport" class="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition flex items-center gap-2">
+            <ArrowDownTrayIcon class="w-5 h-5" />
+            Generate Govbuilt Import
+          </button>
+          <button @click="openModal()" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
+            <PlusIcon class="w-5 h-5" />
+            Add Detail
+          </button>
+        </div>
       </div>
     </header>
 
@@ -200,8 +206,12 @@ import {
   ArrowLeftIcon, 
   PlusIcon, 
   DocumentTextIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowDownTrayIcon
 } from '@heroicons/vue/24/outline'
+
+import { invoke } from '@tauri-apps/api/core'
+
 
 const router = useRouter()
 const { list, save, remove } = useAccountingStore()
@@ -217,6 +227,76 @@ function openModal(detail?: AccountingDetail) {
 async function saveDetail() {
   const success = await save(editing.value as AccountingDetail)
   if (success) modalOpen.value = false
+}
+
+async function generateGovbuiltImport() {
+  const govBuiltData = {
+    name: "AccountingDetails",
+    displayName: "Accounting Details",
+    description: "Accounting details for Govbuilt import",
+    author: "",
+    website: "",
+    version: "1.0.0",
+    issetuprecipe: false,
+    categories: [],
+    tags: [],
+    steps: [
+      {
+        name: "content",
+        data: list.value.map(detail => ({
+          ContentType: "AccountingDetails",
+          DisplayText: detail.title,
+          Latest: true,
+          Published: true,
+          ModifiedUtc: "[js: new Date()]",
+          PublishedUtc: "[js: new Date()]",
+          CreatedUtc: "[js: new Date()]",
+          Owner: "",
+          Author: "",
+          AccountingDetails: {
+            GLKey: {
+              Text: detail.glKey || ""
+            },
+            TranCode: {
+              Text: detail.tranCode || ""
+            },
+            FeeAbbreviation: {
+              Text: detail.feeAbbreviation || ""
+            },
+            Notes: {
+              Text: detail.notes || ""
+            },
+            FeeCode: {
+              Text: detail.feeCode || ""
+            },
+            DebitAccountNumber: {
+              Text: detail.debitAccountNumber || ""
+            },
+            DebitAccountTransferNumber: {
+              Text: detail.debitAccountTransferNumber || ""
+            },
+            FeeDetails: {}
+          },
+          TitlePart: {
+            Title: detail.title
+          }
+        }))
+      }
+    ]
+  };
+  try {
+    // Call the Tauri command to generate the file in Import Files directory
+  await invoke('generate_import_file', {
+      data: govBuiltData,
+      path: 'Import Files/AccountingDetails.json'
+    });
+    
+    // Show success message
+    alert('Govbuilt import file generated successfully in Import Files directory!');
+  } catch (error) {
+    console.error('Error generating import file:', error);
+    alert('Error generating import file: ' + error);
+  }
 }
 </script>
 

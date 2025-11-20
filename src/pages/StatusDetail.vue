@@ -26,7 +26,7 @@
       </div>
     </header>
 
-    <!-- MAIN FORM — THIS WAS MISSING BEFORE! -->
+    <!-- MAIN FORM-->
     <main class="max-w-4xl mx-auto px-6 py-10">
       <form @submit.prevent="save" class="bg-white rounded-3xl shadow-xl ring-1 ring-slate-200/50 p-8 lg:p-12 space-y-12">
         <!-- Title -->

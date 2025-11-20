@@ -13,30 +13,26 @@
 </script>
 
 <style scoped>
-/* PERFECT slide transition — used by Nuxt, Vitesse, and Apple */
+/* SOFT fade transition — less jarring than slide */
 .page-enter-active,
 .page-leave-active {
-  transition: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 0.3s ease-in-out;
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: translate3d(100%, 0, 0);
 }
 
 .page-enter-to {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
 }
 
 .page-leave-from {
   opacity: 1;
-  transform: translate3d(0, 0, 0);
 }
 
 .page-leave-to {
   opacity: 0;
-  transform: translate3d(-30%, 0, 0);
 }
 
 /* This is the magic — both pages are absolute, no layout shift */

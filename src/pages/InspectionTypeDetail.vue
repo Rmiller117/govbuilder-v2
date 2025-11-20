@@ -92,9 +92,7 @@ const router = useRouter()
 
 // Renamed to avoid duplicate identifier
 const { list, save: saveInspectionType } = useInspectionTypeStore()
-const { list: workflowList } = useWorkflowStore()
-
-const workflows = computed(() => workflowList.value)
+useWorkflowStore()
 
 const id = computed(() => route.params.id as string)
 const isNew = computed(() => route.path.endsWith('/new'))

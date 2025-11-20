@@ -67,7 +67,6 @@ export function useInspectionWorkflowStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this inspection workflow?')) return
     workflows.value = workflows.value.filter(w => w.id !== id)
     await projectStore.saveCurrent()
   }

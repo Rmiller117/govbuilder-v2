@@ -44,7 +44,6 @@ export function useCaseSubTypeStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this subtype?')) return
     subtypes.value = subtypes.value.filter(s => s.id !== id)
     await projectStore.saveCurrent()
   }

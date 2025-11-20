@@ -5,8 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface AccountingDetail {
   id: string
-  title: string          // required
-  glKey: string          // required
+  title: string         
+  glKey: string          
   tranCode?: string
   feeCode?: string
   feeAbbreviation?: string
@@ -61,7 +61,6 @@ export function useAccountingStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this accounting detail?')) return
     details.value = details.value.filter(d => d.id !== id)
     await projectStore.saveCurrent()
   }

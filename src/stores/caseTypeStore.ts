@@ -49,7 +49,6 @@ export function useCaseTypeStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this case type?')) return
     caseTypes.value = caseTypes.value.filter(t => t.id !== id)
     await projectStore.saveCurrent()
   }

@@ -52,7 +52,6 @@ export function useStatusStore() {
   }
 
   async function remove(id: string) {
-    if (!confirm('Delete this status?')) return
     statuses.value = statuses.value.filter((s: any) => s.id !== id)
     await projectStore.saveCurrent()   // ← FIX #2
   }

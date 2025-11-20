@@ -250,7 +250,7 @@ const form = ref<StatusForm>({
 // ──────────────────────────────────────────────────────────────
 onMounted(() => {
   if (!isNew.value) {
-    const existing = statusStore.list.value.find(s => s.id === id.value)
+    const existing = statusStore.list.value.find((s: { id: string }) => s.id === id.value)
     if (!existing) {
       router.replace('/statuses')
       return

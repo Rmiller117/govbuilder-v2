@@ -21,9 +21,9 @@
             class="w-full px-5 py-4 font-mono text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-vertical placeholder-slate-400"
           />
           <!-- Template badge -->
-          <div class="absolute top-4 right-4">
+          <div class="absolute bottom-4 right-4">
             <span class="text-xs font-medium text-slate-500 bg-slate-200/90 px-3 py-1.5 rounded-full backdrop-blur">
-              &lt;emailTemplate&gt;
+              &lt;HTML and Liquid Supported&gt;
             </span>
           </div>
         </div>
@@ -32,12 +32,6 @@
         <div class="flex justify-between items-center text-xs text-slate-500">
           <span v-if="localBody.trim()">
             {{ localBody.length }} characters
-          </span>
-          <span v-else class="italic">
-            Template auto-inserted on first edit
-          </span>
-          <span class="font-medium text-blue-600">
-            HTML supported
           </span>
         </div>
       </div>

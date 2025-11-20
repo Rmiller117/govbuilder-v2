@@ -197,9 +197,6 @@ const currentProjectName = computed(() => {
 })
 
 // ── Full config object (the whole JSON) ──────────────────────────────
-const currentConfig = computed(() => {
-  return store.current?.data ?? {}
-})
 
 /* ------------------------------------------------------------------ */
 /*  Lifecycle – make sure recent‑projects list is loaded               */

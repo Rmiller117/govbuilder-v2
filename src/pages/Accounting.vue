@@ -11,13 +11,17 @@
         </div>
 
         <div class="flex gap-4">
-<button @click="generateGovbuiltImport" class="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition flex items-center gap-2">
+          <button @click="generateGovbuiltImport" class="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition flex items-center gap-2">
             <ArrowDownTrayIcon class="w-5 h-5" />
             Generate Govbuilt Import
           </button>
           <button @click="openModal()" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
             <PlusIcon class="w-5 h-5" />
             Add Detail
+          </button>
+          <button @click="importFile" class="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
+            <DocumentArrowUpIcon class="w-5 h-5" />
+            Import
           </button>
         </div>
       </div>
@@ -54,7 +58,7 @@
             </div>
 
             <button
-              @click.stop="remove(detail.id)"
+              @click.stop="remove(detail.id), handleDelete()"
               class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
               title="Delete detail"
             >
@@ -65,6 +69,17 @@
       </TransitionGroup>
     </main>
 
+    <!-- Toast Component -->
+     <Transition
+  enter-active-class="transition ease-out duration-300"
+  enter-from-class="opacity-0 translate-y-4"
+  enter-to-class="opacity-100 translate-y-0"
+  leave-active-class="transition ease-in duration-200"
+  leave-from-class="opacity-100 translate-y-0"
+  leave-to-class="opacity-0 -translate-y-4"
+>
+    <Toast :message="toastMessage" :type="toastType" v-if="showToast" />
+     </Transition>
     <!-- Animated Modal -->
     <teleport to="body">
   <TransitionRoot :show="modalOpen" appear>
@@ -187,6 +202,15 @@
     </Dialog>
   </TransitionRoot>
 </teleport>
+
+<!-- File input for import (hidden) -->
+<input
+  ref="fileInputRef"
+  type="file"
+  accept=".csv,.xlsx,.xls"
+  class="hidden"
+  @change="handleFileUpload"
+/>
   </div>
 </template>
 
@@ -207,17 +231,35 @@ import {
   PlusIcon, 
   DocumentTextIcon,
   TrashIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  DocumentArrowUpIcon
 } from '@heroicons/vue/24/outline'
 
 import { invoke } from '@tauri-apps/api/core'
+import { useProjectStore } from '@/stores/projectStore'
+import Toast from '@/components/Toast.vue'
+import { importAccountingDetailsFromFile } from '@/utils/accountingImportUtils.ts'
 
+// Toast state
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref<'success' | 'error' | 'info'>('success')
+
+function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
+}
 
 const router = useRouter()
 const { list, save, remove } = useAccountingStore()
 
 const modalOpen = ref(false)
 const editing = ref<Partial<AccountingDetail>>({})
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 function openModal(detail?: AccountingDetail) {
   editing.value = detail ? { ...detail } : { title: '', glKey: '' }
@@ -226,76 +268,165 @@ function openModal(detail?: AccountingDetail) {
 
 async function saveDetail() {
   const success = await save(editing.value as AccountingDetail)
-  if (success) modalOpen.value = false
+  if (success) {
+    modalOpen.value = false
+    showToastMessage('Accounting detail saved successfully!')
+  }
 }
 
+function handleDelete() {
+  showToastMessage('Accounting detail deleted.', 'info')
+}
+
+function buildGovBuiltImportString(list: AccountingDetail[]) {
+  const indent = (level: number) => '  '.repeat(level)
+
+  const itemToString = (detail: AccountingDetail) => {
+    // use JSON.stringify for values to ensure safe escaping
+    const title = JSON.stringify(detail.title || '')
+    const glKey = JSON.stringify(detail.glKey || '')
+    const tranCode = JSON.stringify(detail.tranCode || '')
+    const feeAbbreviation = JSON.stringify(detail.feeAbbreviation || '')
+    const notes = JSON.stringify(detail.notes || '')
+    const feeCode = JSON.stringify(detail.feeCode || '')
+    const debitAccountNumber = JSON.stringify(detail.debitAccountNumber || '')
+    const debitAccountTransferNumber = JSON.stringify(detail.debitAccountTransferNumber || '')
+    const feeDetails = JSON.stringify(detail.feeDetails || '')
+
+    // Build the object text in EXACT desired order (keys ordered as written)
+    return [
+      '{',
+      `${indent(3)}"ContentItemId": "[js: uuid]",`,
+      `${indent(3)}"ContentItemVersionId": "[js: uuid]",`,
+      `${indent(3)}"ContentType": "AccountingDetails",`,
+      `${indent(3)}"DisplayText": ${title},`,
+      `${indent(3)}"Latest": true,`,
+      `${indent(3)}"Published": true,`,
+      `${indent(3)}"ModifiedUtc": "[js: new Date()]",`,
+      `${indent(3)}"PublishedUtc": "[js: new Date()]",`,
+      `${indent(3)}"CreatedUtc": "[js: new Date()]",`,
+      `${indent(3)}"Owner": "",`,
+      `${indent(3)}"Author": "",`,
+      `${indent(3)}"AccountingDetails": {`,
+      `${indent(4)}"GLKey": { "Text": ${glKey} },`,
+      `${indent(4)}"TranCode": { "Text": ${tranCode} },`,
+      `${indent(4)}"FeeAbbreviation": { "Text": ${feeAbbreviation} },`,
+      `${indent(4)}"Notes": { "Text": ${notes} },`,
+      `${indent(4)}"FeeCode": { "Text": ${feeCode} },`,
+      `${indent(4)}"DebitAccountNumber": { "Text": ${debitAccountNumber} },`,
+      `${indent(4)}"DebitAccountTransferNumber": { "Text": ${debitAccountTransferNumber} },`,
+      `${indent(4)}"FeeDetails": { "Text": ${feeDetails} }`,
+      `${indent(3)}} ,`,
+      `${indent(3)}"TitlePart": { "Title": ${title} }`,
+      `${indent(2)}}`
+    ].join('\n')
+  }
+
+  const items = list.map(itemToString).join(',\n')
+
+  // full document in the exact order you defined earlier
+  const doc = [
+    '{',
+    `${indent(1)}"name": "",`,
+    `${indent(1)}"displayName": "",`,
+    `${indent(1)}"description": "",`,
+    `${indent(1)}"author": "",`,
+    `${indent(1)}"website": "",`,
+    `${indent(1)}"version": "",`,
+    `${indent(1)}"issetuprecipe": false,`,
+    `${indent(1)}"categories": [],`,
+    `${indent(1)}"tags": [],`,
+    `${indent(1)}"steps": [`,
+    `${indent(2)}{`,
+    `${indent(3)}"name": "content",`,
+    `${indent(3)}"data": [`,
+    items ? items : `${indent(4)}{}`,
+    `\n${indent(3)}]`,
+    `${indent(2)}}`,
+    `${indent(1)}]`,
+    '}'
+  ].join('\n')
+
+  return doc
+}
+
+
 async function generateGovbuiltImport() {
-  const govBuiltData = {
-    name: "AccountingDetails",
-    displayName: "Accounting Details",
-    description: "Accounting details for Govbuilt import",
-    author: "",
-    website: "",
-    version: "1.0.0",
-    issetuprecipe: false,
-    categories: [],
-    tags: [],
-    steps: [
-      {
-        name: "content",
-        data: list.value.map(detail => ({
-          ContentType: "AccountingDetails",
-          DisplayText: detail.title,
-          Latest: true,
-          Published: true,
-          ModifiedUtc: "[js: new Date()]",
-          PublishedUtc: "[js: new Date()]",
-          CreatedUtc: "[js: new Date()]",
-          Owner: "",
-          Author: "",
-          AccountingDetails: {
-            GLKey: {
-              Text: detail.glKey || ""
-            },
-            TranCode: {
-              Text: detail.tranCode || ""
-            },
-            FeeAbbreviation: {
-              Text: detail.feeAbbreviation || ""
-            },
-            Notes: {
-              Text: detail.notes || ""
-            },
-            FeeCode: {
-              Text: detail.feeCode || ""
-            },
-            DebitAccountNumber: {
-              Text: detail.debitAccountNumber || ""
-            },
-            DebitAccountTransferNumber: {
-              Text: detail.debitAccountTransferNumber || ""
-            },
-            FeeDetails: {}
-          },
-          TitlePart: {
-            Title: detail.title
-          }
-        }))
-      }
-    ]
-  };
   try {
-    // Call the Tauri command to generate the file in Import Files directory
-  await invoke('generate_import_file', {
-      data: govBuiltData,
-      path: 'Import Files/AccountingDetails.json'
-    });
+    if (!list.value || list.value.length === 0) {
+      showToastMessage('No accounting details to export', 'info')
+      return
+    }
+
+    const projectStore = useProjectStore()
+    if (!projectStore.current?.path) {
+      showToastMessage('No project selected. Please select a project first.', 'error')
+      return
+    }
+
+    const currentProjectPath = projectStore.current.path
+    const importDir = 'Import Files'
+    const fileName = 'AccountingDetails.json'
+    const fullPath = `${currentProjectPath}/${importDir}/${fileName}`
+
+    // Build exact-ordered JSON string
+    const jsonString = buildGovBuiltImportString(list.value)
+
+    // Call Tauri command that writes raw JSON string to file
+    await invoke('generate_import_file_raw', {
+      json: jsonString,
+      path: fullPath
+    })
+
+    showToastMessage('Govbuilt import file generated successfully in project directory!', 'success')
+  } catch (err) {
+    console.error(err)
+    showToastMessage('Error generating import file: ' + (err as Error).message, 'error')
+  }
+}
+
+
+// Import functionality
+function importFile() {
+  fileInputRef.value?.click()
+}
+
+async function handleFileUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files || input.files.length === 0) return
+
+  const file = input.files[0]
+  if (!file) return
+
+  try {
+    showToastMessage('Processing import file...', 'info')
     
-    // Show success message
-    alert('Govbuilt import file generated successfully in Import Files directory!');
+    // Read file content based on type
+    let content: string | ArrayBuffer | null = null
+    if (file.name.toLowerCase().endsWith('.csv')) {
+      content = await file.text()
+    } else {
+      content = await file.arrayBuffer()
+    }
+
+    // Import accounting details from file
+    const result = await importAccountingDetailsFromFile(content, file.name)
+    
+    if (result.success) {
+      showToastMessage(`Successfully imported ${result.importedCount} accounting details!`, 'success')
+    } else {
+      showToastMessage(`Import failed: ${result.message}`, 'error')
+      if (result.errors && result.errors.length > 0) {
+        console.error('Import errors:', result.errors)
+      }
+    }
   } catch (error) {
-    console.error('Error generating import file:', error);
-    alert('Error generating import file: ' + error);
+    showToastMessage(`Error reading file: ${(error as Error).message}`, 'error')
+  } finally {
+    // Reset file input
+    if (input) {
+      input.value = ''
+    }
   }
 }
 </script>
@@ -314,5 +445,6 @@ async function generateGovbuiltImport() {
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
+  line-clamp: 1;
 }
 </style>

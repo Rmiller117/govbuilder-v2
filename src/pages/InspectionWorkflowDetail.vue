@@ -193,6 +193,8 @@ async function handleSave() {
     return
   }
 
+  console.log('localConfigs:', localConfigs.value) // Add this line for debugging
+
   const payload: InspectionWorkflow = {
     id: isNew.value ? undefined : id.value,
     name: form.value.name.trim(),
@@ -210,6 +212,8 @@ async function handleSave() {
         .filter(([, v]) => v !== undefined)
     ),
   }
+
+  console.log('Payload to be saved:', payload) // Add this line for debugging
 
   await saveWorkflow(payload as InspectionWorkflow)
   router.push('/inspection-types')
@@ -235,3 +239,5 @@ async function handleSave() {
   }
 }
 </style>
+
+

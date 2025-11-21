@@ -71,7 +71,10 @@ export function useInspectionWorkflowStore() {
     await projectStore.saveCurrent()
   }
 
-  watch(workflows, () => projectStore.saveCurrent(), { deep: true })
+  watch(workflows, () => {
+  console.log('Workflows changed:', workflows.value) // Add this line for debugging
+  projectStore.saveCurrent()
+}, { deep: true })
 
   return { list, save, remove }
 }

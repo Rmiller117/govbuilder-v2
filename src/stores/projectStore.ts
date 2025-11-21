@@ -143,21 +143,27 @@ export const useProjectStore = defineStore('project', () => {
     current.value = { path: projectPath, data: template }
   }
 
-  async function loadProject(path: string) {
-    const dataFile = await resolve(path, 'govbuilder.json')
-    if (!(await exists(dataFile))) {
-      throw new Error('Not a valid GovBuilder project (missing govbuilder.json)')
-    }
-    const text = await readTextFile(dataFile)
-    const data = JSON.parse(text)
-    current.value = { path, data }
+async function loadProject(path: string) {
+  const dataFile = await resolve(path, 'govbuilder.json')
+  if (!(await exists(dataFile))) {
+    throw new Error('Not a valid GovBuilder project (missing govbuilder.json)')
   }
+  const text = await readTextFile(dataFile)
+  const data = JSON.parse(text)
 
-  async function saveCurrent() {
-    if (!current.value) return
-    const dataFile = await resolve(current.value.path, 'govbuilder.json')
-    await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
-  }
+  console.log('Loading project:', data) // Add this line for debugging
+
+  current.value = { path, data }
+}
+
+async function saveCurrent() {
+  if (!current.value) return
+
+  console.log('Data to be saved:', current.value.data) // Add this line for debugging
+
+  const dataFile = await resolve(current.value.path, 'govbuilder.json')
+  await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
+}
 
   return {
     projects,

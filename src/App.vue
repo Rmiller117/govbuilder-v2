@@ -1,6 +1,6 @@
 <!-- src/App.vue — THE ONLY VERSION THAT NEVER JERKS -->
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+  <div class="relative min-h-screen bg-[rgb(var(--bg))] text-[rgb(var(--text))] transition-colors duration-300">
     <!-- Two overlapping layers -->
     <Transition name="page" mode="out-in" appear>
       <router-view class="absolute inset-0" />
@@ -35,7 +35,6 @@
   opacity: 0;
 }
 
-/* This is the magic — both pages are absolute, no layout shift */
 .page-enter-active,
 .page-leave-active {
   position: absolute;

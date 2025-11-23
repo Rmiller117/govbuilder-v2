@@ -1,9 +1,57 @@
-/* src/assets/tailwind.css */
 @import "tailwindcss";
 
-/* Global defaults – @apply works perfectly now */
-@layer base {
-  body {
-    @apply bg-gray-50 antialiased;
-  }
+/* ───── CORE COLOR PALETTE ───── */
+html {
+  /* Light mode */
+  --bg:          255 255 255;        /* #ffffff */
+  --surface:     250 250 250;        /* cards, inputs */
+  --elevated:    255 255 255;        /* modals, popovers */
+  --text:        17 91 161;          /* #115BA1 – your brand blue */
+  --text-muted:  100 116 139;        /* slate-500 */
+  --border:      226 232 240;        /* slate-200 */
+  --primary:     17 91 161;          /* #115BA1 */
+  --primary-hover: 13 74 138;        /* darker blue */
+  --success:     34 197 94;          /* green-500 */
+  --danger:      239 68 68;          /* red-500 */
+  --shadow:      0 0 0 / 8%;
+  --ring:        59 130 246;         /* blue-500 */
 }
+html {
+  background-color: rgb(var(--bg));
+}
+body {
+  background-color: transparent;
+}
+html.dark {
+  /* Dark mode – deep but not pure black */
+  --bg:          15 23 42;           /* slate-900/95 */
+  --surface:     30 41 59;           /* slate-800 */
+  --elevated:    51 65 85;           /* slate-700 */
+  --text:        203 213 224;        /* slate-200 */
+  --text-muted:  148 163 184;        /* slate-400 */
+  --border:      51 65 85;           /* slate-700 */
+  --primary:     59 130 246;         /* blue-500 – brighter in dark */
+  --primary-hover: 96 165 250;       /* blue-400 */
+  --success:     74 222 128;         /* green-400 */
+  --danger:      248 113 113;        /* red-400 */
+  --shadow:      0 0 0 / 30%;
+  --ring:        96 165 250;         /* blue-400 */
+}
+
+/* ───── SMOOTH TRANSITIONS ───── */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ───── UTILITY CLASSES (use anywhere) ───── */
+.bg-bg          { background-color: rgb(var(--bg)); }
+.bg-surface     { background-color: rgb(var(--surface)); }
+.bg-elevated    { background-color: rgb(var(--elevated)); }
+.text-primary   { color: rgb(var(--primary)); }
+.text-success   { color: rgb(var(--success)); }
+.text-danger    { color: rgb(var(--danger)); }
+.border-base    { border-color: rgb(var(--border)); }
+.shadow-base    { box-shadow: 0 1px 3px rgb(var(--shadow)), 0 1px 2px rgb(var(--shadow)); }
+.shadow-md      { box-shadow: 0 4px 6px rgb(var(--shadow)), 0 2px 4px rgb(var(--shadow)); }
+.shadow-lg      { box-shadow: 0 10px 15px rgb(var(--shadow)), 0 4px 6px rgb(var(--shadow)); }
+.ring-focus     { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--ring))/0.5]; }

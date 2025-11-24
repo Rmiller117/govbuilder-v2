@@ -13,9 +13,12 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex items-center justify-between py-3">
-    <div class=" flex items-center gap-3">
-      <span class="text-lg font-medium text-gray-800">{{ label }}</span>
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-medium text-[rgb(var(--text))]">
+        {{ label }}
+      </span>
     </div>
+
     <Toggle
       :modelValue="modelValue"
       @update:modelValue="emit('update:modelValue', $event)"

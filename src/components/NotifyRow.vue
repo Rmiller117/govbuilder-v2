@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <!-- Main Toggle + Label -->
     <div class="flex items-center justify-between">
-      <label class="text-sm font-semibold text-slate-700 select-none">
+      <label class="text-sm font-semibold text-[rgb(var(--text))] select-none">
         {{ label }}
       </label>
       <Toggle v-model="enabled" />
@@ -18,18 +18,33 @@
             @blur="onBlur"
             placeholder="Your custom email content..."
             rows="10"
-            class="w-full px-5 py-4 font-mono text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all resize-vertical placeholder-slate-400"
+            class="
+              w-full px-5 py-4 font-mono text-sm rounded-xl resize-vertical
+              bg-[rgb(var(--surface))]
+              text-[rgb(var(--text))]
+              placeholder-[rgb(var(--text-muted))]
+              border border-base
+              focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))/0.5)]
+              transition-all
+            "
           />
+
           <!-- Template badge -->
           <div class="absolute bottom-4 right-4">
-            <span class="text-xs font-medium text-slate-500 bg-slate-200/90 px-3 py-1.5 rounded-full backdrop-blur">
+            <span
+              class="
+                text-xs font-medium px-3 py-1.5 rounded-full backdrop-blur
+                bg-[rgb(var(--elevated)/0.9))]
+                text-[rgb(var(--text-muted))]
+              "
+            >
               &lt;HTML and Liquid Supported&gt;
             </span>
           </div>
         </div>
 
         <!-- Footer info -->
-        <div class="flex justify-between items-center text-xs text-slate-500">
+        <div class="flex justify-between items-center text-xs text-[rgb(var(--text-muted))]">
           <span v-if="localBody.trim()">
             {{ localBody.length }} characters
           </span>
@@ -86,7 +101,6 @@ function onBlur() {
   }
 }
 
-// Sync when parent updates
 watch(() => props.emailBody, (newVal) => {
   localBody.value = newVal ?? ''
 })

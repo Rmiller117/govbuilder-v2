@@ -10,12 +10,31 @@ const emit = defineEmits<{
 
 <template>
   <label class="relative inline-flex items-center cursor-pointer select-none">
+    <!-- Hidden Checkbox -->
     <input
       type="checkbox"
       :checked="props.modelValue"
       @change="emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
       class="sr-only peer"
-    >
-    <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 peer-focus-visible:ring-4 peer-focus-visible:ring-blue-300"></div>
+    />
+
+    <!-- Track -->
+    <div
+      class="
+        w-14 h-8 rounded-full transition-colors
+        bg-[rgb(var(--surface))] border border-base
+        peer-checked:bg-[rgb(var(--primary))]
+        peer-focus-visible:ring-2 peer-focus-visible:ring-[rgb(var(--ring))/0.4]
+      "
+    ></div>
+
+    <!-- Knob -->
+    <div
+      class="
+        absolute top-0.5 left-0.5 h-7 w-7 rounded-full
+        bg-[rgb(var(--bg))] border border-base transition-all
+        peer-checked:left-[calc(100%-1.75rem)]
+      "
+    ></div>
   </label>
 </template>

@@ -114,164 +114,189 @@
 
     <!-- ==================== CASE TYPE MODAL ==================== -->
     <teleport to="body">
-      <TransitionRoot :show="caseTypeModalOpen" appear>
-        <Dialog as="div" class="relative z-50" @close="closeCaseTypeModal">
-          <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-            leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-          </TransitionChild>
+  <TransitionRoot :show="caseTypeModalOpen" appear>
+    <Dialog as="div" class="relative z-50" @close="closeCaseTypeModal">
+      <!-- Backdrop -->
+      <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      </TransitionChild>
 
-          <div class="fixed inset-0 flex items-center justify-center p-4">
-            <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-              leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-screen overflow-y-auto">
-                <h3 class="text-2xl font-bold mb-6">
-                  {{ editingType?.id ? 'Edit' : 'New' }} Case Type
-                </h3>
+      <!-- Modal Panel -->
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
+          enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
+          leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
+          <DialogPanel class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-screen overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+              {{ editingType?.id ? 'Edit' : 'New' }} Case Type
+            </h3>
 
-                <div v-if="editingType" class="space-y-6">
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Title <span
-                        class="text-red-600">*</span></label>
-                    <input v-model="editingType.title"
-                      class="w-full px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] bg-bg"
-                      placeholder="e.g. Building Permit" autofocus />
-                  </div>
+            <div v-if="editingType" class="space-y-6">
+              <!-- Title -->
+              <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  Title <span class="text-red-600">*</span>
+                </label>
+                <input v-model="editingType.title"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  placeholder="e.g. Building Permit" autofocus />
+              </div>
 
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium mb-2">Number Prefix</label>
-                      <input v-model="editingType.prefix" placeholder="BLDG-"
-                        class="w-full px-4 py-3 border border-base rounded-lg bg-bg" />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium mb-2">Number Suffix</label>
-                      <input v-model="editingType.suffix" placeholder="-{{yy}}"
-                        class="w-full px-4 py-3 border border-base rounded-lg bg-bg" />
-                    </div>
-                  </div>
+              <!-- Prefix / Suffix -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Number Prefix</label>
+                  <input v-model="editingType.prefix" placeholder="BLDG-"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Number Suffix</label>
+                  <input v-model="editingType.suffix" placeholder="-{{yy}}"
+                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+                </div>
+              </div>
 
-                  <div class="flex items-center gap-8">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" v-model="editingType.autoNumber" class="w-5 h-5 text-blue-600 rounded" />
-                      <span>Use Auto-Number</span>
-                    </label>
-                    <label class="flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" v-model="editingType.autoLicense" class="w-5 h-5 text-blue-600 rounded" />
-                      <span>Auto-create License on Approval</span>
-                    </label>
-                  </div>
+              <!-- Checkboxes -->
+              <div class="flex items-center gap-8 text-gray-900 dark:text-gray-100">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" v-model="editingType.autoNumber"
+                    class="w-5 h-5 text-blue-600 rounded" />
+                  <span>Use Auto-Number</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" v-model="editingType.autoLicense"
+                    class="w-5 h-5 text-blue-600 rounded" />
+                  <span>Auto-create License on Approval</span>
+                </label>
+              </div>
 
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Allowed Subtypes</label>
-                    <select v-model="pendingSubtypeId" @change="addSubtypeToType"
-                      class="w-full px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] bg-bg">
-                      <option :value="null">Add a subtype...</option>
-                      <option v-for="sub in sortedSubtypes" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
-                    </select>
-                    <div class="mt-4 flex flex-wrap gap-3">
-                      <div v-for="subId in editingType.subtypes" :key="subId"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
-                        <span>{{ subtypeName(subId) }}</span>
-                        <button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)"
-                          class="text-blue-600 hover:text-blue-800">
-                          <TrashIcon class="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-2">Assigned Workflow</label>
-                    <select v-model="editingType.workflowId" class="w-full px-4 py-3 border border-base rounded-lg bg-bg">
-                      <option :value="undefined">No workflow</option>
-                      <option v-for="wf in workflows" :key="wf.id" :value="wf.id">{{ wf.name }} ({{ wf.steps.length }}
-                        steps)</option>
-                    </select>
+              <!-- Subtypes -->
+              <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Allowed Subtypes</label>
+                <select v-model="pendingSubtypeId" @change="addSubtypeToType"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                  <option :value="null">Add a subtype...</option>
+                  <option v-for="sub in sortedSubtypes" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+                </select>
+                <div class="mt-4 flex flex-wrap gap-3">
+                  <div v-for="subId in editingType.subtypes" :key="subId"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
+                    <span>{{ subtypeName(subId) }}</span>
+                    <button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)"
+                      class="text-blue-600 hover:text-blue-800">
+                      <TrashIcon class="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
+              </div>
 
-                <div class="flex justify-end gap-4 mt-8">
-                  <button @click="closeCaseTypeModal" class="px-6 py-3 border border-base rounded-xl">Cancel</button>
-                  <button @click="saveCaseType" :disabled="!editingType?.title?.trim()"
-                    class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition">
-                    Save Case Type
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </TransitionRoot>
-    </teleport>
+              <!-- Workflow -->
+              <div>
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Assigned Workflow</label>
+                <select v-model="editingType.workflowId"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                  <option :value="undefined">No workflow</option>
+                  <option v-for="wf in workflows" :key="wf.id" :value="wf.id">{{ wf.name }} ({{ wf.steps.length }} steps)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-4 mt-8">
+              <button @click="closeCaseTypeModal"
+                class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700">
+                Cancel
+              </button>
+              <button @click="saveCaseType" :disabled="!editingType?.title?.trim()"
+                class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition">
+                Save Case Type
+              </button>
+            </div>
+          </DialogPanel>
+        </TransitionChild>
+      </div>
+    </Dialog>
+  </TransitionRoot>
+</teleport>
+
 
     <!-- ==================== WORKFLOW EDITOR MODAL ==================== -->
     <teleport to="body">
-      <TransitionRoot :show="workflowModalOpen" appear>
-        <Dialog as="div" class="relative z-50" @close="closeWorkflowModal">
-          <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-            leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-          </TransitionChild>
+  <TransitionRoot :show="workflowModalOpen" appear>
+    <Dialog as="div" class="relative z-50" @close="closeWorkflowModal">
+      <!-- Backdrop -->
+      <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      </TransitionChild>
 
-          <div class="fixed inset-0 flex items-center justify-center p-4">
-            <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-              leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
-                <h3 v-if="editingWorkflow" class="text-2xl font-bold mb-6">Edit Workflow: {{ editingWorkflow.name }}
-                </h3>
+      <!-- Modal Panel -->
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
+          enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
+          leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
+          <DialogPanel class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
+            <h3 v-if="editingWorkflow" class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+              Edit Workflow: {{ editingWorkflow.name }}
+            </h3>
 
-                <div v-if="editingWorkflow">
-                  <input v-model="editingWorkflow.name" placeholder="Workflow name"
-                    class="w-full px-4 py-3 border border-base rounded-lg text-xl font-medium mb-6 bg-bg" />
+            <div v-if="editingWorkflow" class="space-y-6">
+              <!-- Workflow Name -->
+              <input v-model="editingWorkflow.name" placeholder="Workflow name"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-xl font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-6" />
 
-                  <div class="mb-8">
-                    <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-3">Add Status</p>
-                    <select v-model="pendingStatusId" @change="addStatusToWorkflow"
-                      class="w-full px-4 py-3 border border-base rounded-lg bg-bg">
-                      <option :value="null" disabled>Select a status...</option>
-                      <option v-for="status in availableStatuses" :key="status.id" :value="status.id">{{ status.title }}
-                      </option>
-                    </select>
+              <!-- Add Status -->
+              <div class="mb-8">
+                <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-3">Add Status</p>
+                <select v-model="pendingStatusId" @change="addStatusToWorkflow"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                  <option :value="null" disabled>Select a status...</option>
+                  <option v-for="status in availableStatuses" :key="status.id" :value="status.id">{{ status.title }}</option>
+                </select>
+              </div>
+
+              <!-- Workflow Steps -->
+              <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-4">Workflow Steps (drag to reorder)</p>
+              <draggable v-model="editingWorkflow.steps" item-key="id" handle=".handle" :force-fallback="true"
+                fallback-tolerance="5"
+                class="min-h-80 bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-dashed border-purple-300 dark:border-purple-700">
+                <template #item="{ element: step }">
+                  <div
+                    class="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-base border border-purple-200 dark:border-purple-700 flex items-center justify-between mb-4 handle cursor-move select-none">
+                    <div class="flex items-center gap-5">
+                      <Bars3Icon class="w-6 h-6 text-purple-600 handle" />
+                      <span class="text-lg font-semibold text-purple-900 dark:text-purple-300">{{ statusTitle(step.statusId) }}</span>
+                    </div>
+                    <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
+                      <TrashIcon class="w-5 h-5" />
+                    </button>
                   </div>
+                </template>
+              </draggable>
 
-                  <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-4">Workflow Steps (drag to reorder)</p>
-                  <draggable v-model="editingWorkflow.steps" item-key="id" handle=".handle" :force-fallback="true"
-                    fallback-tolerance="5"
-                    class="min-h-80 bg-surface rounded-xl p-6 border-2 border-dashed border-purple-300 dark:border-purple-700">
-                    <template #item="{ element: step }">
-                      <div
-                        class="p-5 bg-surface rounded-xl shadow-base border border-purple-200 dark:border-purple-700 flex items-center justify-between mb-4 handle cursor-move select-none">
-                        <div class="flex items-center gap-5">
-                          <Bars3Icon class="w-6 h-6 text-purple-600 handle" />
-                          <span class="text-lg font-semibold text-purple-900 dark:text-purple-300">{{ statusTitle(step.statusId) }}</span>
-                        </div>
-                        <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
-                          <TrashIcon class="w-5 h-5" />
-                        </button>
-                      </div>
-                    </template>
-                  </draggable>
+              <div v-if="!editingWorkflow.steps.length"
+                class="text-center text-purple-400 dark:text-purple-500 py-20 italic text-lg">
+                Select statuses from the dropdown above
+              </div>
+            </div>
 
-                  <div v-if="!editingWorkflow.steps.length" class="text-center text-purple-400 dark:text-purple-500 py-20 italic text-lg">
-                    Select statuses from the dropdown above
-                  </div>
-                </div>
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-4 mt-8">
+              <button @click="closeWorkflowModal"
+                class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700">
+                Cancel
+              </button>
+              <button @click="saveWorkflow"
+                class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Save Workflow</button>
+            </div>
+          </DialogPanel>
+        </TransitionChild>
+      </div>
+    </Dialog>
+  </TransitionRoot>
+</teleport>
 
-                <div class="flex justify-end gap-4 mt-8">
-                  <button @click="closeWorkflowModal" class="px-6 py-3 border border-base rounded-xl">Cancel</button>
-                  <button @click="saveWorkflow"
-                    class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Save
-                    Workflow</button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </Dialog>
-      </TransitionRoot>
-    </teleport>
 
     <!-- ==================== SUBTYPES MODAL ==================== -->
     <teleport to="body">

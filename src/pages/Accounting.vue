@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-bg text-[rgb(var(--text))]">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="bg-surface border-b border-base shadow-sm">
       <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button @click="router.push('/dashboard')" class="p-2.5 rounded-lg hover:bg-gray-100 transition">
+          <button @click="router.push('/dashboard')" class="p-2.5 rounded-lg hover:bg-[rgb(var(--bg))] transition">
             <ArrowLeftIcon class="w-6 h-6" />
           </button>
-          <h1 class="text-3xl font-bold text-gray-900">Accounting Details</h1>
+          <h1 class="text-3xl font-bold">Accounting Details</h1>
         </div>
 
-        <div class="flex gap-4">
+        <div class="flex items-center gap-4">
           <button @click="generateGovbuiltImport"
             class="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition flex items-center gap-2">
             <ArrowDownTrayIcon class="w-5 h-5" />
@@ -26,6 +26,7 @@
             <DocumentArrowUpIcon class="w-5 h-5" />
             Import
           </button>
+          <ThemeToggleButton />
         </div>
       </div>
     </header>
@@ -33,32 +34,32 @@
     <main class="max-w-5xl mx-auto px-6 py-12">
       <!-- Empty State -->
       <div v-if="!list.length" class="text-center py-20">
-        <div class="bg-gray-100 w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center">
-          <DocumentTextIcon class="w-12 h-12 text-gray-400" />
+        <div class="bg-surface border border-base w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center">
+          <DocumentTextIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
         </div>
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">No accounting details yet</h3>
-        <p class="text-gray-500">Click “Add Detail” to create your first one.</p>
+        <h3 class="text-xl font-semibold mb-2">No accounting details yet</h3>
+        <p class="text-[rgb(var(--text-muted))]">Click "Add Detail" to create your first one.</p>
       </div>
 
       <!-- Vertical List -->
       <TransitionGroup name="list" tag="ul" class="space-y-4">
         <li v-for="detail in list" :key="detail.id"
-          class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group"
+          class="bg-surface rounded-2xl shadow-base border border-base overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group"
           @click="openModal(detail)">
           <div class="px-8 py-6 flex items-center justify-between">
             <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-900">{{ detail.title }}</h3>
+              <h3 class="text-lg font-semibold">{{ detail.title }}</h3>
               <div class="mt-2 flex items-center gap-3 text-sm">
-                <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-medium text-xs">
+                <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full font-medium text-xs">
                   GL: {{ detail.glKey }}
                 </span>
-                <span v-if="detail.notes" class="text-gray-600 line-clamp-1">{{ detail.notes }}</span>
-                <span v-else class="text-gray-400 italic">No notes</span>
+                <span v-if="detail.notes" class="text-[rgb(var(--text-muted))] line-clamp-1">{{ detail.notes }}</span>
+                <span v-else class="text-[rgb(var(--text-muted))] italic">No notes</span>
               </div>
             </div>
 
             <button @click.stop="remove(detail.id), handleDelete()"
-              class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+              class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
               title="Delete detail">
               <TrashIcon class="w-5 h-5" />
             </button>
@@ -88,7 +89,7 @@
             <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
+              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8">
                 <h2 class="text-2xl font-bold mb-8">
                   {{ editing?.id ? 'Edit' : 'Add' }} Accounting Detail
                 </h2>
@@ -96,69 +97,69 @@
                 <form @submit.prevent="saveDetail" class="space-y-6">
                   <!-- Title * -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium mb-2">
                       Title <span class="text-red-500">*</span>
                     </label>
                     <input v-model="editing.title" required
-                      class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      class="w-full px-5 py-3 border border-base rounded-xl focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] focus:border-transparent bg-bg" />
                   </div>
 
                   <!-- GL Key * -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium mb-2">
                       GL Key <span class="text-red-500">*</span>
                     </label>
                     <input v-model="editing.glKey" required placeholder="e.g. 01-101-550021"
-                      class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      class="w-full px-5 py-3 border border-base rounded-xl focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] focus:border-transparent bg-bg" />
                   </div>
 
                   <!-- Rest of the fields – same as before -->
                   <div class="grid grid-cols-2 gap-6">
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">Tran Code</label>
-                      <input v-model="editing.tranCode" class="w-full px-5 py-3 border border-gray-300 rounded-xl" />
+                      <label class="block text-sm font-medium mb-2">Tran Code</label>
+                      <input v-model="editing.tranCode" class="w-full px-5 py-3 border border-base rounded-xl bg-bg" />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">Fee Code</label>
-                      <input v-model="editing.feeCode" class="w-full px-5 py-3 border border-gray-300 rounded-xl" />
+                      <label class="block text-sm font-medium mb-2">Fee Code</label>
+                      <input v-model="editing.feeCode" class="w-full px-5 py-3 border border-base rounded-xl bg-bg" />
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fee Abbreviation</label>
+                    <label class="block text-sm font-medium mb-2">Fee Abbreviation</label>
                     <input v-model="editing.feeAbbreviation" placeholder="Required for JetPay..."
-                      class="w-full px-5 py-3 border border-gray-300 rounded-xl" />
+                      class="w-full px-5 py-3 border border-base rounded-xl bg-bg" />
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                    <label class="block text-sm font-medium mb-2">Notes</label>
                     <textarea v-model="editing.notes" rows="3"
-                      class="w-full px-5 py-3 border border-gray-300 rounded-xl"></textarea>
+                      class="w-full px-5 py-3 border border-base rounded-xl bg-bg"></textarea>
                   </div>
 
                   <div class="grid grid-cols-2 gap-6">
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">Debit Account Number</label>
+                      <label class="block text-sm font-medium mb-2">Debit Account Number</label>
                       <input v-model="editing.debitAccountNumber"
-                        class="w-full px-5 py-3 border border-gray-300 rounded-xl" />
+                        class="w-full px-5 py-3 border border-base rounded-xl bg-bg" />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-2">Debit Account Transfer Number</label>
+                      <label class="block text-sm font-medium mb-2">Debit Account Transfer Number</label>
                       <input v-model="editing.debitAccountTransferNumber"
-                        class="w-full px-5 py-3 border border-gray-300 rounded-xl" />
+                        class="w-full px-5 py-3 border border-base rounded-xl bg-bg" />
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Fee Details</label>
+                    <label class="block text-sm font-medium mb-2">Fee Details</label>
                     <textarea v-model="editing.feeDetails" rows="4"
-                      class="w-full px-5 py-3 border border-gray-300 rounded-xl"></textarea>
+                      class="w-full px-5 py-3 border border-base rounded-xl bg-bg"></textarea>
                   </div>
 
                   <!-- Buttons -->
-                  <div class="flex justify-end gap-4 pt-8 border-t">
+                  <div class="flex justify-end gap-4 pt-8 border-t border-base">
                     <button type="button" @click="modalOpen = false"
-                      class="px-8 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
+                      class="px-8 py-3 border border-base rounded-xl hover:bg-[rgb(var(--bg))] transition">
                       Cancel
                     </button>
                     <button type="submit"
@@ -203,6 +204,7 @@ import {
 import { invoke } from '@tauri-apps/api/core'
 import { useProjectStore } from '@/stores/projectStore'
 import Toast from '@/components/Toast.vue'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 import { importAccountingDetailsFromFile } from '@/utils/accountingImportUtils.ts'
 
 // Toast state

@@ -1,47 +1,50 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+  <div class="min-h-screen bg-bg text-[rgb(var(--text))]">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-slate-200">
+    <header class="bg-surface border-b border-base shadow-sm">
       <div class="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button @click="router.back()" class="p-2.5 rounded-lg hover:bg-slate-100 transition">
+          <button @click="router.back()" class="p-2.5 rounded-lg hover:bg-[rgb(var(--bg))] transition">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 class="text-3xl font-bold text-slate-900">
+          <h1 class="text-3xl font-bold">
             {{ isNew ? 'Create Status' : 'Edit Status' }}
           </h1>
         </div>
 
-        <button
-          @click="showLiquidModal = true"
-          class="px-5 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition flex items-center gap-2 shadow-md"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-          </svg>
-          Show Available Liquid
-        </button>
+        <div class="flex items-center gap-4">
+          <button
+            @click="showLiquidModal = true"
+            class="px-5 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition flex items-center gap-2 shadow-md"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            Show Available Liquid
+          </button>
+          <ThemeToggleButton />
+        </div>
       </div>
     </header>
 
     <!-- MAIN FORM-->
     <main class="max-w-4xl mx-auto px-6 py-10">
-      <form @submit.prevent="save" class="bg-white rounded-3xl shadow-xl ring-1 ring-slate-200/50 p-8 lg:p-12 space-y-12">
+      <form @submit.prevent="save" class="bg-surface rounded-3xl shadow-xl ring-1 ring-base/50 p-8 lg:p-12 space-y-12">
         <!-- Title -->
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-3">Status Title <span class="text-red-500">*</span></label>
-          <input v-model="form.title" required autofocus placeholder="e.g. In Review" class="w-full px-5 py-4 text-lg font-medium bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <label class="block text-sm font-semibold mb-3">Status Title <span class="text-red-500">*</span></label>
+          <input v-model="form.title" required autofocus placeholder="e.g. In Review" class="w-full px-5 py-4 text-lg font-medium bg-[rgb(var(--bg))] border border-base rounded-xl focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))/0.5]" />
         </div>
 
         <!-- Hide from chevron -->
-        <div class="border-t pt-8">
+        <div class="border-t border-base pt-8">
           <ToggleRow label="Hide from status flow chevron" v-model="form.hideFromStatusFlowChevron" />
         </div>
 
         <!-- Notifications -->
-        <div class="border-t pt-8 space-y-10">
+        <div class="border-t border-base pt-8 space-y-10">
           <NotifyRow
             v-for="row in notificationRows"
             :key="row.key"
@@ -53,8 +56,8 @@
         </div>
 
         <!-- Buttons -->
-        <div class="flex justify-end gap-4 pt-8 border-t">
-          <button type="button" @click="router.back()" class="px-8 py-3.5 text-lg font-medium border border-slate-300 rounded-xl hover:bg-slate-50">
+        <div class="flex justify-end gap-4 pt-8 border-t border-base">
+          <button type="button" @click="router.back()" class="px-8 py-3.5 text-lg font-medium border border-base rounded-xl hover:bg-[rgb(var(--bg))]">
             Cancel
           </button>
           <button type="submit" class="px-8 py-3.5 text-lg font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-md">
@@ -75,21 +78,21 @@
           <div class="fixed inset-0 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4">
               <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95" enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100" leave-to="opacity-0 scale-95">
-                <DialogPanel class="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl p-8">
+                <DialogPanel class="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-surface rounded-2xl shadow-2xl p-8">
                   <div class="flex items-center justify-between mb-8">
-                    <DialogTitle class="text-2xl font-bold text-slate-900">Available Liquid Variables</DialogTitle>
-                    <button @click="showLiquidModal = false" class="p-2 rounded-lg hover:bg-slate-100">
+                    <DialogTitle class="text-2xl font-bold">Available Liquid Variables</DialogTitle>
+                    <button @click="showLiquidModal = false" class="p-2 rounded-lg hover:bg-[rgb(var(--bg))]">
                       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
 
-                  <p class="text-slate-600 italic mb-8">Click any variable to copy it.</p>
+                  <p class="text-[rgb(var(--text-muted))] italic mb-8">Click any variable to copy it.</p>
 
                   <!-- Case Information -->
                   <section class="mb-10">
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Case Information</h3>
+                    <h3 class="font-semibold text-lg mb-4">Case Information</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <LiquidTag tag="Number" desc="Case Number" @copied="handleCopy"/>
                       <LiquidTag tag="CaseName" desc="Case Name" @copied="handleCopy"/>
@@ -109,7 +112,7 @@
 
                   <!-- Permit Dates -->
                   <section class="mb-10">
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Permit Dates</h3>
+                    <h3 class="font-semibold text-lg mb-4">Permit Dates</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <LiquidTag tag="PermitIssuedDate" @copied="handleCopy"/>
                       <LiquidTag tag="PermitExpirationDate" @copied="handleCopy"/>
@@ -119,7 +122,7 @@
 
                   <!-- Primary Contact -->
                   <section>
-                    <h3 class="font-semibold text-lg text-slate-800 mb-4">Primary Contact</h3>
+                    <h3 class="font-semibold text-lg mb-4">Primary Contact</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <LiquidTag tag="ApplicantFirstName" @copied="handleCopy"/>
                       <LiquidTag tag="ApplicantLastName" @copied="handleCopy"/>
@@ -173,6 +176,7 @@ import {
 import LiquidTag from '@/components/LiquidTag.vue'     // ← Don't forget this!
 import ToggleRow from '@/components/ToggleRow.vue'
 import NotifyRow from '@/components/NotifyRow.vue'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 const route = useRoute()
 const router = useRouter()

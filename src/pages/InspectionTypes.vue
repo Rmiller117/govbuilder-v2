@@ -1,21 +1,24 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-bg text-[rgb(var(--text))]">
     <!-- Header with both buttons at the top -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="bg-surface border-b border-base shadow-sm">
       <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button @click="router.push('/dashboard')" class="p-2.5 rounded-lg hover:bg-gray-100 transition">
+          <button @click="router.push('/dashboard')" class="p-2.5 rounded-lg hover:bg-[rgb(var(--bg))] transition">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 class="text-3xl font-bold text-gray-900">Inspection Types</h1>
+          <h1 class="text-3xl font-bold">Inspection Types</h1>
         </div>
-        <button @click="importFile"
-          class="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
-          <DocumentArrowUpIcon class="w-5 h-5" />
-          Import
-        </button>
+        <div class="flex items-center gap-4">
+          <button @click="importFile"
+            class="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
+            <DocumentArrowUpIcon class="w-5 h-5" />
+            Import
+          </button>
+          <ThemeToggleButton />
+        </div>
       </div>
     </header>
 
@@ -23,7 +26,7 @@
       <!-- Inspection Types Section -->
       <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Inspection Types</h2>
+          <h2 class="text-2xl font-bold">Inspection Types</h2>
           <div class="flex items-center gap-4">
             <router-link to="/inspection-types/new"
               class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
@@ -37,25 +40,25 @@
 
         <!-- Empty State -->
         <div v-if="!inspectionTypes.length"
-          class="text-center py-10 bg-white rounded-2xl shadow-md border border-gray-200 mb-6">
-          <div class="bg-gray-100 w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          class="text-center py-10 bg-surface rounded-2xl shadow-base border border-base mb-6">
+          <div class="bg-surface border border-base w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-8 h-8 text-[rgb(var(--text-muted))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 19l-2-2m0 0l-2-2m2 2l2-2m5 6l-2-2m0 0l-2-2m2 2l2-2" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-700 mb-1">No inspection types yet</h3>
-          <p class="text-gray-500">Click “Add Inspection Type” to create one.</p>
+          <h3 class="text-lg font-semibold mb-1">No inspection types yet</h3>
+          <p class="text-[rgb(var(--text-muted))]">Click "Add Inspection Type" to create one.</p>
         </div>
 
         <!-- Vertical List of Inspection Types -->
         <TransitionGroup name="list" tag="ul" class="space-y-4">
           <li v-for="type in inspectionTypes" :key="type.id"
-            class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition">
+            class="bg-surface rounded-2xl shadow-base border border-base overflow-hidden hover:shadow-xl transition">
             <div class="px-8 py-6 flex items-center justify-between group">
               <div @click="router.push(`/inspection-types/${type.id}`)" class="cursor-pointer flex-1">
-                <h3 class="text-lg font-semibold text-gray-900">{{ type.title }}</h3>
-                <p class="text-sm text-gray-600 mt-1">
+                <h3 class="text-lg font-semibold">{{ type.title }}</h3>
+                <p class="text-sm text-[rgb(var(--text-muted))] mt-1">
                   Duration: {{ formatDuration(type.durationHours) }}
                   <span v-if="type.workflowId" class="ml-4 text-purple-600">
                     • Workflow: {{ workflowName(type.workflowId) || 'Assigned' }}
@@ -78,7 +81,7 @@
       <!-- Workflows Section -->
       <div class="mb-12">
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-gray-900">Inspection Workflows</h2>
+          <h2 class="text-2xl font-bold">Inspection Workflows</h2>
           <router-link to="/inspection-workflows/new"
             class="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,24 +93,24 @@
 
         <!-- Empty State -->
         <div v-if="!workflows.length"
-          class="text-center py-10 bg-white rounded-2xl shadow-md border border-gray-200 mb-6">
-          <div class="bg-gray-100 w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          class="text-center py-10 bg-surface rounded-2xl shadow-base border border-base mb-6">
+          <div class="bg-surface border border-base w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
+            <svg class="w-8 h-8 text-[rgb(var(--text-muted))]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-gray-700 mb-1">No inspection workflows yet</h3>
-          <p class="text-gray-500">Create workflows to control inspection notifications</p>
+          <h3 class="text-lg font-semibold mb-1">No inspection workflows yet</h3>
+          <p class="text-[rgb(var(--text-muted))]">Create workflows to control inspection notifications</p>
         </div>
 
         <!-- Vertical List of Workflows -->
         <TransitionGroup name="list" tag="ul" class="space-y-4">
           <li v-for="wf in workflows" :key="wf.id"
-            class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition">
+            class="bg-surface rounded-2xl shadow-base border border-base overflow-hidden hover:shadow-xl transition">
             <div class="px-8 py-6 flex items-center justify-between group">
               <div @click="router.push(`/inspection-workflows/${wf.id}`)" class="cursor-pointer flex-1">
-                <h3 class="text-lg font-semibold text-gray-900">{{ wf.name }}</h3>
-                <p class="text-sm text-gray-600 mt-1">
+                <h3 class="text-lg font-semibold">{{ wf.name }}</h3>
+                <p class="text-sm text-[rgb(var(--text-muted))] mt-1">
                   {{ activeStatuses(wf) }} status{{ activeStatuses(wf) !== 1 ? 'es' : '' }} with notifications
                 </p>
               </div>
@@ -135,6 +138,7 @@ import { useInspectionTypeStore } from '@/stores/inspectionTypeStore'
 import { useInspectionWorkflowStore } from '@/stores/inspectionWorkflowStore'
 import { importInspectionTypesFromFile } from '@/utils/inspectionTypeImportUtils'
 import { DocumentArrowUpIcon } from '@heroicons/vue/24/outline'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 // Toast state
 const showToast = ref(false)

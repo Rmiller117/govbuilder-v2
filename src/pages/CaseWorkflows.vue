@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+  <div class="min-h-screen bg-bg text-[rgb(var(--text))]">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+    <header class="bg-surface border-b border-base shadow-sm sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <div>
-          <button @click="router.back()" class="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-2">
+          <button @click="router.back()" class="flex items-center gap-2 text-[rgb(var(--text-muted))] hover:text-primary mb-2">
             Back to Dashboard
           </button>
-          <h1 class="text-4xl font-bold text-slate-900">Case Workflows</h1>
-          <p class="text-lg text-slate-600 mt-2">Define case types and automated status flows</p>
+          <h1 class="text-4xl font-bold">Case Workflows</h1>
+          <p class="text-lg text-[rgb(var(--text-muted))] mt-2">Define case types and automated status flows</p>
         </div>
 
         <div class="flex items-center gap-4">
@@ -27,6 +27,7 @@
             <PlusIcon class="w-5 h-5" />
             New Workflow
           </button>
+          <ThemeToggleButton />
         </div>
       </div>
     </header>
@@ -34,36 +35,36 @@
     <main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
       <!-- Case Types -->
       <section>
-        <h2 class="text-2xl font-bold text-slate-800 mb-8">Case Types</h2>
+        <h2 class="text-2xl font-bold mb-8">Case Types</h2>
         <TransitionGroup name="list" tag="div" class="space-y-5">
           <div v-for="type in caseTypes" :key="type.id"
-            class="relative bg-white rounded-2xl shadow-md border border-slate-200 transition-all duration-300 hover:shadow-lg">
+            class="relative bg-surface rounded-2xl shadow-base border border-base transition-all duration-300 hover:shadow-lg group">
             <!-- TrashIcon (hover right side only) -->
             <div class="absolute inset-y-0 right-0 w-32 flex items-center justify-center pointer-events-none">
               <button @click.stop="deleteCaseType(type.id)"
-                class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                 title="Delete case type">
                 <TrashIcon class="w-5 h-5" />
               </button>
             </div>
 
-            <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-slate-50 transition">
+            <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-[rgb(var(--bg))] transition">
               <!-- Workflow Tag -->
               <div v-if="type.workflowId" class="absolute top-4 right-8">
                 <button @click.stop="openWorkflowEditor(workflowStore.get(type.workflowId)!)"
-                  class="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full hover:bg-indigo-200 transition">
+                  class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition">
                   Workflow: {{ workflowStore.get(type.workflowId)?.name || 'Untitled' }}
                 </button>
               </div>
 
-              <h3 class="font-bold text-xl text-slate-800">{{ type.title }}</h3>
-              <p class="text-sm text-slate-600 mt-1">
+              <h3 class="font-bold text-xl">{{ type.title }}</h3>
+              <p class="text-sm text-[rgb(var(--text-muted))] mt-1">
                 {{ type.prefix || '' }}{{ type.autoNumber ? '####' : '' }}{{ type.suffix || '' }}
               </p>
 
               <div class="mt-4 flex flex-wrap gap-2">
                 <span v-for="sub in sortedSubtypeNames(type.subtypes)" :key="sub.id"
-                  class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                  class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium">
                   {{ sub.name }}
                 </span>
               </div>
@@ -71,28 +72,28 @@
           </div>
         </TransitionGroup>
 
-        <p v-if="!caseTypes.length" class="text-center text-slate-500 italic py-20 text-lg">
-          No case types yet — click “+ New Case Type” to create one
+        <p v-if="!caseTypes.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
+          No case types yet — click "+ New Case Type" to create one
         </p>
       </section>
 
       <!-- Workflows -->
       <section>
-        <h2 class="text-2xl font-bold text-slate-800 mb-8">Workflows</h2>
+        <h2 class="text-2xl font-bold mb-8">Workflows</h2>
         <TransitionGroup name="list" tag="div" class="space-y-4">
           <div v-for="wf in workflows" :key="wf.id"
-            class="relative bg-purple-50 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg">
+            class="relative bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 transition-all duration-300 hover:shadow-lg group">
             <!-- TrashIcon (hover right side only) -->
             <div class="absolute inset-y-0 right-0 w-28 flex items-center justify-center pointer-events-none">
               <button @click.stop="deleteWorkflow(wf.id)"
-                class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                 title="Delete workflow">
                 <TrashIcon class="w-5 h-5" />
               </button>
             </div>
 
-            <div @click="openWorkflowEditor(wf)" class="pl-8 pr-36 py-6 cursor-pointer hover:bg-purple-100 transition">
-              <h3 class="text-xl font-bold text-purple-900 mb-3">{{ wf.name }}</h3>
+            <div @click="openWorkflowEditor(wf)" class="pl-8 pr-36 py-6 cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-800/30 transition">
+              <h3 class="text-xl font-bold text-purple-900 dark:text-purple-300 mb-3">{{ wf.name }}</h3>
               <div class="flex items-center gap-3 overflow-x-auto">
                 <div v-for="step in wf.steps" :key="step.id" class="flex-shrink-0">
                   <div
@@ -105,8 +106,8 @@
           </div>
         </TransitionGroup>
 
-        <p v-if="!workflows.length" class="text-center text-slate-500 italic py-20 text-lg">
-          No workflows yet — click “+ New Workflow” to create one
+        <p v-if="!workflows.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
+          No workflows yet — click "+ New Workflow" to create one
         </p>
       </section>
     </main>
@@ -124,30 +125,30 @@
             <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-screen overflow-y-auto">
+              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-screen overflow-y-auto">
                 <h3 class="text-2xl font-bold mb-6">
                   {{ editingType?.id ? 'Edit' : 'New' }} Case Type
                 </h3>
 
                 <div v-if="editingType" class="space-y-6">
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Title <span
+                    <label class="block text-sm font-medium mb-2">Title <span
                         class="text-red-600">*</span></label>
                     <input v-model="editingType.title"
-                      class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      class="w-full px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] bg-bg"
                       placeholder="e.g. Building Permit" autofocus />
                   </div>
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Number Prefix</label>
+                      <label class="block text-sm font-medium mb-2">Number Prefix</label>
                       <input v-model="editingType.prefix" placeholder="BLDG-"
-                        class="w-full px-4 py-3 border rounded-lg" />
+                        class="w-full px-4 py-3 border border-base rounded-lg bg-bg" />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">Number Suffix</label>
+                      <label class="block text-sm font-medium mb-2">Number Suffix</label>
                       <input v-model="editingType.suffix" placeholder="-{{yy}}"
-                        class="w-full px-4 py-3 border rounded-lg" />
+                        class="w-full px-4 py-3 border border-base rounded-lg bg-bg" />
                     </div>
                   </div>
 
@@ -163,15 +164,15 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Allowed Subtypes</label>
+                    <label class="block text-sm font-medium mb-2">Allowed Subtypes</label>
                     <select v-model="pendingSubtypeId" @change="addSubtypeToType"
-                      class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                      class="w-full px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] bg-bg">
                       <option :value="null">Add a subtype...</option>
                       <option v-for="sub in sortedSubtypes" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
                     </select>
                     <div class="mt-4 flex flex-wrap gap-3">
                       <div v-for="subId in editingType.subtypes" :key="subId"
-                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
                         <span>{{ subtypeName(subId) }}</span>
                         <button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)"
                           class="text-blue-600 hover:text-blue-800">
@@ -182,8 +183,8 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Assigned Workflow</label>
-                    <select v-model="editingType.workflowId" class="w-full px-4 py-3 border rounded-lg">
+                    <label class="block text-sm font-medium mb-2">Assigned Workflow</label>
+                    <select v-model="editingType.workflowId" class="w-full px-4 py-3 border border-base rounded-lg bg-bg">
                       <option :value="undefined">No workflow</option>
                       <option v-for="wf in workflows" :key="wf.id" :value="wf.id">{{ wf.name }} ({{ wf.steps.length }}
                         steps)</option>
@@ -192,7 +193,7 @@
                 </div>
 
                 <div class="flex justify-end gap-4 mt-8">
-                  <button @click="closeCaseTypeModal" class="px-6 py-3 border rounded-xl">Cancel</button>
+                  <button @click="closeCaseTypeModal" class="px-6 py-3 border border-base rounded-xl">Cancel</button>
                   <button @click="saveCaseType" :disabled="!editingType?.title?.trim()"
                     class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition">
                     Save Case Type
@@ -218,34 +219,34 @@
             <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
+              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
                 <h3 v-if="editingWorkflow" class="text-2xl font-bold mb-6">Edit Workflow: {{ editingWorkflow.name }}
                 </h3>
 
                 <div v-if="editingWorkflow">
                   <input v-model="editingWorkflow.name" placeholder="Workflow name"
-                    class="w-full px-4 py-3 border rounded-lg text-xl font-medium mb-6" />
+                    class="w-full px-4 py-3 border border-base rounded-lg text-xl font-medium mb-6 bg-bg" />
 
                   <div class="mb-8">
-                    <p class="text-sm font-medium text-purple-700 mb-3">Add Status</p>
+                    <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-3">Add Status</p>
                     <select v-model="pendingStatusId" @change="addStatusToWorkflow"
-                      class="w-full px-4 py-3 border rounded-lg">
+                      class="w-full px-4 py-3 border border-base rounded-lg bg-bg">
                       <option :value="null" disabled>Select a status...</option>
                       <option v-for="status in availableStatuses" :key="status.id" :value="status.id">{{ status.title }}
                       </option>
                     </select>
                   </div>
 
-                  <p class="text-sm font-medium text-purple-700 mb-4">Workflow Steps (drag to reorder)</p>
+                  <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-4">Workflow Steps (drag to reorder)</p>
                   <draggable v-model="editingWorkflow.steps" item-key="id" handle=".handle" :force-fallback="true"
                     fallback-tolerance="5"
-                    class="min-h-80 bg-white rounded-xl p-6 border-2 border-dashed border-purple-300">
+                    class="min-h-80 bg-surface rounded-xl p-6 border-2 border-dashed border-purple-300 dark:border-purple-700">
                     <template #item="{ element: step }">
                       <div
-                        class="p-5 bg-white rounded-xl shadow-md border border-purple-200 flex items-center justify-between mb-4 handle cursor-move select-none">
+                        class="p-5 bg-surface rounded-xl shadow-base border border-purple-200 dark:border-purple-700 flex items-center justify-between mb-4 handle cursor-move select-none">
                         <div class="flex items-center gap-5">
                           <Bars3Icon class="w-6 h-6 text-purple-600 handle" />
-                          <span class="text-lg font-semibold text-purple-900">{{ statusTitle(step.statusId) }}</span>
+                          <span class="text-lg font-semibold text-purple-900 dark:text-purple-300">{{ statusTitle(step.statusId) }}</span>
                         </div>
                         <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
                           <TrashIcon class="w-5 h-5" />
@@ -254,13 +255,13 @@
                     </template>
                   </draggable>
 
-                  <div v-if="!editingWorkflow.steps.length" class="text-center text-purple-400 py-20 italic text-lg">
+                  <div v-if="!editingWorkflow.steps.length" class="text-center text-purple-400 dark:text-purple-500 py-20 italic text-lg">
                     Select statuses from the dropdown above
                   </div>
                 </div>
 
                 <div class="flex justify-end gap-4 mt-8">
-                  <button @click="closeWorkflowModal" class="px-6 py-3 border rounded-xl">Cancel</button>
+                  <button @click="closeWorkflowModal" class="px-6 py-3 border border-base rounded-xl">Cancel</button>
                   <button @click="saveWorkflow"
                     class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Save
                     Workflow</button>
@@ -285,17 +286,17 @@
             <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-              <DialogPanel class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8">
+              <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-2xl w-full p-8">
                 <h3 class="text-2xl font-bold mb-6">Manage Case Subtypes</h3>
                 <div class="flex gap-3 mb-6">
                   <input v-model="newSubtypeName" @keyup.enter="addSubtype" placeholder="e.g. Residential"
-                    class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500" />
+                    class="flex-1 px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-emerald-500 bg-bg" />
                   <button @click="addSubtype" :disabled="!newSubtypeName.trim()"
                     class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50">Add</button>
                 </div>
                 <div class="flex flex-wrap gap-3">
                   <div v-for="sub in sortedSubtypes" :key="sub.id"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded-full text-sm font-medium">
                     <span>{{ sub.name }}</span>
                     <button @click="removeSubtype(sub.id)" class="text-emerald-600 hover:text-emerald-800">
                       <TrashIcon class="w-4 h-4" />
@@ -345,6 +346,7 @@ import {
   CogIcon,
   Bars3Icon
 } from '@heroicons/vue/24/outline'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 const router = useRouter()
 const statusStore = useStatusStore()

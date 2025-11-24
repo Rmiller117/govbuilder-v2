@@ -1,46 +1,49 @@
 <!-- src/views/InspectionWorkflowDetail.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow-sm border-b border-gray-200">
+  <div class="min-h-screen bg-bg text-[rgb(var(--text))]">
+    <header class="bg-surface border-b border-base shadow-sm">
       <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button @click="router.back()" class="p-2.5 rounded-lg hover:bg-gray-100 transition">
+          <button @click="router.back()" class="p-2.5 rounded-lg hover:bg-[rgb(var(--bg))] transition">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 class="text-3xl font-bold text-gray-900">
+          <h1 class="text-3xl font-bold">
             {{ isNew ? 'Create' : 'Edit' }} Inspection Workflow
           </h1>
         </div>
-        <button @click="handleSave"
-          class="px-8 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
-          Save Workflow
-        </button>
+        <div class="flex items-center gap-4">
+          <button @click="handleSave"
+            class="px-8 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition">
+            Save Workflow
+          </button>
+          <ThemeToggleButton />
+        </div>
       </div>
     </header>
 
     <main class="max-w-6xl mx-auto px-6 py-12">
-      <form @submit.prevent="handleSave" class="bg-white rounded-3xl shadow-xl p-8 space-y-8">
+      <form @submit.prevent="handleSave" class="bg-surface rounded-3xl shadow-xl p-8 space-y-8">
         <!-- Workflow name section unchanged -->
         <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-3">
+          <label class="block text-sm font-semibold mb-3">
             Workflow Name <span class="text-red-500">*</span>
           </label>
           <input v-model="form.name" required placeholder="e.g. Building Final - Completed Notifications"
-            class="w-full px-5 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+            class="w-full px-5 py-4 text-lg border border-base rounded-xl focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] focus:border-transparent bg-bg" />
         </div>
 
         <!-- Tabs for status notifications -->
         <div class="space-y-10">
-          <h2 class="text-2xl font-bold text-gray-800">Notification Settings by Status</h2>
+          <h2 class="text-2xl font-bold">Notification Settings by Status</h2>
 
           <!-- Tab headers with horizontal scrolling -->
           <div class="overflow-x-auto pb-2">
-            <ul class="flex space-x-4 min-w-max border-b border-gray-300 mb-4">
+            <ul class="flex space-x-4 min-w-max border-b border-base mb-4">
               <li v-for="status in statusKeys" :key="status" @click="activeTab = status" :class="[
                 'px-4 py-2 cursor-pointer whitespace-nowrap',
-                activeTab === status ? 'border-b-2 border-purple-600 text-purple-600 font-semibold' : 'text-gray-700'
+                activeTab === status ? 'border-b-2 border-purple-600 text-purple-600 font-semibold' : 'text-[rgb(var(--text-muted))]'
               ]">
                 {{ formatStatus(status) }}
               </li>
@@ -48,9 +51,9 @@
           </div>
 
           <!-- Tab content -->
-          <div v-show="activeTab" class="border rounded-2xl p-6 bg-gray-50">
+          <div v-show="activeTab" class="border border-base rounded-2xl p-6 bg-[rgb(var(--bg))]">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800">{{ formatStatus(activeTab) }}</h3>
+              <h3 class="text-lg font-semibold">{{ formatStatus(activeTab) }}</h3>
             </div>
 
             <Transition name="fade">
@@ -67,11 +70,11 @@
                 <!-- Email Templates — only show if the notify switch is ON -->
                 <template v-for="key in notifyKeys" :key="key">
                   <div v-if="currentConfig[key]" class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium mb-2">
                       {{ notifyLabels[key] }} Email Template
                     </label>
                     <textarea v-model="currentConfig[key + 'Template']" rows="12"
-                      class="w-full font-mono text-sm p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 resize-y"></textarea>
+                      class="w-full font-mono text-sm p-4 border border-base rounded-xl focus:ring-2 focus:ring-[rgb(var(--ring))/0.5] resize-y bg-bg"></textarea>
                   </div>
                 </template>
               </div>
@@ -89,6 +92,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInspectionWorkflowStore, type InspectionWorkflow } from '@/stores/inspectionWorkflowStore'
 import ToggleRow from '@/components/ToggleRow.vue'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 const route = useRoute()
 const router = useRouter()

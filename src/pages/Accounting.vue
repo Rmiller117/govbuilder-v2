@@ -243,6 +243,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAccountingStore, type AccountingDetail } from '@/stores/acountingStore'
+import { exportAccountingDetailsToFile } from '@/utils/accountingExportUtils'
+import Toast from '@/components/Toast.vue'
+import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
+import { importAccountingDetailsFromFile } from '@/utils/accountingImportUtils'
 import {
   TransitionRoot,
   TransitionChild,
@@ -253,23 +257,12 @@ import {
   MenuItems,
   MenuItem
 } from '@headlessui/vue'
-
-// Import Heroicons
 import {
-  ArrowLeftIcon,
   PlusIcon,
-  DocumentTextIcon,
   TrashIcon,
-  ArrowDownTrayIcon,
-  DocumentArrowUpIcon,
+  ArrowLeftIcon,
   EllipsisVerticalIcon
 } from '@heroicons/vue/24/outline'
-
-import { invoke } from '@tauri-apps/api/core'
-import { useProjectStore } from '@/stores/projectStore'
-import Toast from '@/components/Toast.vue'
-import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
-import { importAccountingDetailsFromFile } from '@/utils/accountingImportUtils.ts'
 
 // Toast state
 const showToast = ref(false)
@@ -309,107 +302,16 @@ function handleDelete() {
   showToastMessage('Accounting detail deleted.', 'info')
 }
 
-function buildGovBuiltImportString(list: AccountingDetail[]) {
-  const indent = (level: number) => '  '.repeat(level)
-
-  const itemToString = (detail: AccountingDetail) => {
-    // use JSON.stringify for values to ensure safe escaping
-    const title = JSON.stringify(detail.title || null)
-    const glKey = JSON.stringify(detail.glKey || null)
-    const tranCode = JSON.stringify(detail.tranCode || null)
-    const feeAbbreviation = JSON.stringify(detail.feeAbbreviation || null)
-    const notes = JSON.stringify(detail.notes || null)
-    const feeCode = JSON.stringify(detail.feeCode || null)
-    const debitAccountNumber = JSON.stringify(detail.debitAccountNumber || null)
-    const debitAccountTransferNumber = JSON.stringify(detail.debitAccountTransferNumber || null)
-    const feeDetails = JSON.stringify(detail.feeDetails || null)
-
-    // Build the object text in EXACT desired order (keys ordered as written)
-    return [
-      '{',
-      `${indent(3)}"ContentItemId": "[js: uuid()]",`,
-      `${indent(3)}"ContentItemVersionId": "[js: uuid()]",`,
-      `${indent(3)}"ContentType": "AccountingDetails",`,
-      `${indent(3)}"DisplayText": ${title},`,
-      `${indent(3)}"Latest": true,`,
-      `${indent(3)}"Published": true,`,
-      `${indent(3)}"ModifiedUtc": "[js: new Date()]",`,
-      `${indent(3)}"PublishedUtc": "[js: new Date()]",`,
-      `${indent(3)}"CreatedUtc": "[js: new Date()]",`,
-      `${indent(3)}"Owner": "[js: parameters('AdminUserId')]",`,
-      `${indent(3)}"Author": "[js: parameters('AdminUsername')]",`,
-      `${indent(3)}"AccountingDetails": {`,
-      `${indent(4)}"GLKey": { "Text": ${glKey} },`,
-      `${indent(4)}"TranCode": { "Text": ${tranCode} },`,
-      `${indent(4)}"FeeAbbreviation": { "Text": ${feeAbbreviation} },`,
-      `${indent(4)}"Notes": { "Text": ${notes} },`,
-      `${indent(4)}"FeeCode": { "Text": ${feeCode} },`,
-      `${indent(4)}"DebitAccountNumber": { "Text": ${debitAccountNumber} },`,
-      `${indent(4)}"DebitAccountTransferNumber": { "Text": ${debitAccountTransferNumber} },`,
-      `${indent(4)}"FeeDetails": { "Text": ${feeDetails} }`,
-      `${indent(3)}} ,`,
-      `${indent(3)}"TitlePart": { "Title": ${title} }`,
-      `${indent(2)}}`
-    ].join('\n')
-  }
-
-  const items = list.map(itemToString).join(',\n')
-
-  // full document in the exact order you defined earlier
-  const doc = [
-    '{',
-    `${indent(1)}"name": "",`,
-    `${indent(1)}"displayName": "",`,
-    `${indent(1)}"description": "",`,
-    `${indent(1)}"author": "",`,
-    `${indent(1)}"website": "",`,
-    `${indent(1)}"version": "",`,
-    `${indent(1)}"issetuprecipe": false,`,
-    `${indent(1)}"categories": [],`,
-    `${indent(1)}"tags": [],`,
-    `${indent(1)}"steps": [`,
-    `${indent(2)}{`,
-    `${indent(3)}"name": "content",`,
-    `${indent(3)}"data": [`,
-    items ? items : `${indent(4)}{}`,
-    `\n${indent(3)}]`,
-    `${indent(2)}}`,
-    `${indent(1)}]`,
-    '}'
-  ].join('\n')
-
-  return doc
-}
-
 
 async function generateGovbuiltImport() {
   try {
-    if (!list.value || list.value.length === 0) {
-      showToastMessage('No accounting details to export', 'info')
-      return
+    const result = await exportAccountingDetailsToFile()
+    
+    if (result.success) {
+      showToastMessage('Govbuilt import file generated successfully in Import Files folder!', 'success')
+    } else {
+      showToastMessage(result.error || 'Error generating import file', 'error')
     }
-
-    const projectStore = useProjectStore()
-    if (!projectStore.current?.path) {
-      showToastMessage('No project selected. Please select a project first.', 'error')
-      return
-    }
-
-    const currentProjectPath = projectStore.current.path
-    const importDir = 'Import Files'
-    const fileName = 'AccountingDetails.json'
-    const fullPath = `${currentProjectPath}/${importDir}/${fileName}`
-
-    // Build exact-ordered JSON string
-    const jsonString = buildGovBuiltImportString(list.value)
-
-    // Call Tauri command that writes raw JSON string to file
-    await invoke('generate_import_file_raw', {
-      json: jsonString,
-      path: fullPath
-    })
-
-    showToastMessage('Govbuilt import file generated successfully in project directory!', 'success')
   } catch (err) {
     console.error(err)
     showToastMessage('Error generating import file: ' + (err as Error).message, 'error')

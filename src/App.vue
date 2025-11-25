@@ -1,15 +1,18 @@
 <!-- src/App.vue — THE ONLY VERSION THAT NEVER JERKS -->
 <template>
-  <div class="relative min-h-screen bg-[rgb(var(--bg))] text-[rgb(var(--text))] transition-colors duration-300">
-    <!-- Two overlapping layers -->
-    <Transition name="page" mode="out-in" appear>
-      <router-view class="absolute inset-0" />
-    </Transition>
+  <div class="min-h-screen bg-[rgb(var(--bg))] text-[rgb(var(--text))] transition-colors duration-300">
+    <!-- Custom Title Bar -->
+    <TitleBar />
+    
+    <!-- Main content area -->
+    <div class="h-screen pt-8">
+      <router-view />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No script needed
+import TitleBar from '@/components/TitleBar.vue'
 </script>
 
 <style scoped>

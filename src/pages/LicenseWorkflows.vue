@@ -547,7 +547,7 @@ const removeSubtype = async (id: string) => {
 const sortedLicenseSubtypes = computed(() => [...licenseSubtypes.value].sort((a, b) => a.name.localeCompare(b.name)))
 const sortedLicenseSubtypeNames = (ids: string[]) => ids.map(id => ({ id, name: licenseSubtypeName(id) })).sort((a, b) => a.name.localeCompare(b.name))
 
-const licenseSubtypeName = (id: string) => licenseSubtypes.value.find(s => s.id === id)?.name || 'Unknown'
+const licenseSubtypeName = (id: string) => licenseSubtypes.value.find((s: { id: string }) => s.id === id)?.name || 'Unknown'
 
 const addStatusToWorkflow = () => {
   if (!pendingStatusId.value || !editingWorkflow.value) return

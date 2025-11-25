@@ -1,36 +1,50 @@
 <template>
-  <div class="min-h-screen max-w-4xl mx-auto bg-bg text-[rgb(var(--text))] transition-all">
+  <div class="min-h-screen mx-auto bg-bg text-[rgb(var(--text))] transition-all">
     <!-- Header -->
-    <header class="bg-[rgb(var(--primary))] text-white px-8 py-6 rounded-3xl shadow-xl mb-12
-               mx-auto max-w-4xl -mt-4">
-      <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 class="text-3xl font-bold tracking-tight">GovBuilder</h1>
+    <header class="bg-surface border-b border-base shadow-sm">
+      <div class="px-6 py-7">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="flex-1">
+            <!-- Back button -->
+            <nav class="text-sm mb-3">
+              <button @click="router.push('/')"
+                class="inline-flex items-center gap-1.5 text-[rgb(var(--text-muted))] hover:text-primary transition">
+                <ArrowLeftIcon class="w-4 h-4" />
+                Back to Projects
+              </button>
+            </nav>
 
-        <div class="flex items-center gap-3">
-          <!-- Refresh Button -->
-          <button @click="refreshProjects" :disabled="refreshing" class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium
-                   bg-white/10 backdrop-blur-sm hover:bg-white/20 
-                   border border-white/20 shadow-md hover:shadow-lg
-                   active:scale-95 transition-all disabled:opacity-50 ring-focus">
-            <svg v-if="!refreshing" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <svg v-else class="w-4.5 h-4.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4" />
-              <path class="opacity-75"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-            {{ refreshing ? 'Refreshing...' : 'Refresh' }}
-          </button>
+            <h1 class="text-3xl font-bold">GovBuilder</h1>
+            <p class="text-lg text-[rgb(var(--text-muted))] mt-1">
+              Project Management System
+            </p>
+          </div>
 
-          <!-- Theme Toggle -->
-          <ThemeToggleButton />
+          <div class="flex items-center gap-5">
+            <!-- Refresh Button -->
+            <button @click="refreshProjects" :disabled="refreshing"
+              class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium
+                     bg-[rgb(var(--primary))] text-white hover:bg-[rgb(var(--primary-hover))] 
+                     shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-50">
+              <svg v-if="!refreshing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <svg v-else class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4" />
+                <path class="opacity-75"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              {{ refreshing ? 'Refreshing...' : 'Refresh' }}
+            </button>
+
+            <ThemeToggleButton />
+          </div>
         </div>
       </div>
     </header>
 
-    <div class="max-w-4xl mx-auto px-6">
+    <div class="px-6 pt-4">
 
       <!-- First-time Welcome -->
       <div v-if="!projectsRoot" class="text-center py-20">
@@ -124,24 +138,21 @@
 
 <script setup lang="ts">
 import { useProjectStore } from '@/stores/projectStore'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { onMounted, ref, watch, computed } from 'vue'
-import { storeToRefs } from 'pinia'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
+import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
 
 const projectStore = useProjectStore()
 const router = useRouter()
-const { projects, projectsRoot } = storeToRefs(projectStore)
+
+const projects = computed(() => projectStore.projects || [])
+const projectsRoot = computed(() => projectStore.projectsRoot || '')
 
 const newProjectName = ref('')
 const creating = ref(false)
 const refreshing = ref(false)
 
-// Bonus: Show only the last folder name (e.g. "GovProjects" instead of full path)
-const currentFolderName = computed(() => {
-  if (!projectsRoot.value) return 'No folder selected'
-  return projectsRoot.value.split(/[\\/]/).pop() || 'Root folder'
-})
 
 onMounted(async () => {
   await projectStore.scanProjects()

@@ -1,0 +1,10 @@
+{
+  "test": "export",
+  "caseTypesCount": 1,
+  "caseTypes": [
+    {
+      "id": "0cd1faf6-825b-42bf-b856-6d9390618d12",
+      "title": "Building Permit"
+    }
+  ]
+}

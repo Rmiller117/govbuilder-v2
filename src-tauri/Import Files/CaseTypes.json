@@ -1,0 +1,576 @@
+{
+  "name": "Marion",
+  "displayName": "Marion",
+  "description": "Case types export from Marion",
+  "author": "GovBuilder User",
+  "website": "",
+  "version": "1.0.0",
+  "issetuprecipe": false,
+  "categories": [],
+  "tags": [],
+  "steps": [
+    {
+      "name": "content",
+      "data": [
+        {
+          "ContentItemId": "[js: uuid()]",
+          "ContentItemVersionId": "[js: uuid()]",
+          "ContentType": "CaseType",
+          "DisplayText": "Building Permit",
+          "Latest": true,
+          "Published": true,
+          "ModifiedUtc": "[js: new Date()]",
+          "PublishedUtc": "[js: new Date()]",
+          "CreatedUtc": "[js: new Date()]",
+          "Owner": "[js: parameters('AdminUserId')]",
+          "Author": "[js: parameters('AdminUsername')]",
+          "CaseType": {
+            "Title": {
+              "Text": "Building Permit"
+            },
+            "MapPin": {
+              "Paths": [
+                ""
+              ],
+              "MediaTexts": [
+                ""
+              ]
+            },
+            "UseGlobalCaseAutoNumberSettings": {
+              "Value": false
+            },
+            "AllowFrontEndSearch": {
+              "Value": false
+            },
+            "LockCaseNumber": {
+              "Value": false
+            },
+            "DownloadAdminCommentswithCaseDownload": {
+              "Value": false
+            },
+            "AutoNumberStart": {
+              "Text": null
+            },
+            "DepartmentsforScheduling": {
+              "ContentItemIds": null
+            },
+            "UseAutoNumber": {
+              "Value": true
+            },
+            "Prefix": {
+              "Text": "BLDG"
+            },
+            "Suffix": {
+              "Text": "-{{yy}}"
+            },
+            "NumberOfDigits": {
+              "Text": "4"
+            },
+            "InspectionType": {
+              "Value": true
+            },
+            "ReadyForBillingStatus": {
+              "Text": null
+            },
+            "DonotallowApprovedUntilBillingStatusSet": {
+              "Value": false
+            },
+            "SetPermitIssueDateonApprovalStatus": {
+              "Value": false
+            },
+            "ApprovedStatus": {
+              "ContentItemIds": null
+            },
+            "PermitExpirationDateXDaysFromPermitIssueDate": {
+              "Text": null
+            },
+            "WhotoEmailApprovedEmail": {
+              "Text": "None"
+            },
+            "StatusToSendPermitExpirationReminder": {
+              "ContentItemIds": null
+            },
+            "ApprovalEmailSubject": {
+              "Text": null
+            },
+            "ReminderDaysFromPermitExpiration": {
+              "Text": null
+            },
+            "ApprovalEmailForApplicant": {
+              "Html": null
+            },
+            "ApprovalEmailForAssignedTeamMember": {
+              "Html": null
+            },
+            "ApprovedPermitType": {
+              "ContentItemIds": null
+            },
+            "DeclinedStatus": {
+              "ContentItemIds": null
+            },
+            "WhotoEmailDeclinedEmail": {
+              "Text": "None"
+            },
+            "DeclinedEmailSubject": {
+              "Text": null
+            },
+            "DeclinedEmailForApplicant": {
+              "Html": null
+            },
+            "DeclinedEmailForAssignedTeamMember": {
+              "Html": null
+            },
+            "IsDefaultShowFE": {
+              "Value": true
+            },
+            "IsExtendExpirationDate": {
+              "Text": "0"
+            },
+            "IsInspectionAllowed": {
+              "ContentItemIds": null
+            },
+            "CaseTypeStatuses": {
+              "Text": "[{\"ContentItemId\":\"[js: uuid()]\",\"DisplayText\":\"Submitted\",\"PermitTypeId\":null,\"FormLetterId\":null,\"AssignedTeamMembers\":null,\"IsAppendAssignTeamMembers\":false,\"IsTeamMembersNotified\":false,\"TeamEmailSubject\":null,\"TeamEmailBody\":null,\"IsApplicantNotified\":true,\"ApplicantEmailSubject\":null,\"ApplicantEmailBody\":null,\"HideStatusFromStatusFlowChevrons\":false,\"IsContactsNotified\":false,\"ContactsEmailSubject\":null,\"ContactsEmailBody\":null,\"IsOtherTeamMembersNotified\":false,\"OtherTeamMembers\":null,\"OtherTeamMemberSubject\":null,\"OtherTeamMemberEmail\":null,\"OtherTeamMemberRecipientEmailBody\":null,\"IsTasKTeamMembersNotified\":false,\"TaskEmailSubject\":null,\"TaskEmailBody\":null,\"TaskTypeId\":null,\"TaskTypeStatusId\":null,\"TaskListRecipeId\":null,\"IsDeleteExistingTask\":false,\"IsUpdateSelectedRecipeTask\":false,\"OtherTeamMemberRecipientEmail\":null,\"IsNotifyOtherRecipient\":false,\"OtherRecipientEmail\":null,\"OtherEmailSubject\":null,\"OtherNotificationEmailBody\":null,\"AppendTeamMemberRecipientEmail\":null,\"NumberOfDaysInStatus\":null,\"ChangeToCaseStatusId\":null,\"IsIncrementRecipeReviewRound\":false,\"CaseStatusId\":null,\"IsShowOnFE\":false,\"IsRequestNewVersion\":false}]"
+            },
+            "IsCaseTypeStatusesOrderedList": {
+              "Value": true
+            },
+            "InspectionTypeList": {
+              "Text": null
+            },
+            "IsAllowMutlipleAddress": {
+              "Value": false
+            },
+            "Recipe": {
+              "Text": null
+            },
+            "EsriAPI": {
+              "Text": null
+            },
+            "DefaultFolderStructure": {
+              "Text": null
+            },
+            "AllowFrontEndDocumentUpload": {
+              "Value": false
+            },
+            "AlwaysAllowEPlanSoftUploadFE": {
+              "Value": false
+            },
+            "EmailWhenRequestForDocumentUpload": {
+              "Value": false
+            },
+            "RequestForDocumentUploadEmailSubject": {
+              "Text": null
+            },
+            "RequestForDocumentUploadEmailBody": {
+              "Text": null
+            },
+            "CaseStatusUploadRequest": {
+              "Text": null
+            },
+            "CaseStatusUploadRequestEmailSubject": {
+              "Text": null
+            },
+            "CaseStatusUploadRequestEmailBody": {
+              "Text": null
+            },
+            "CaseTitle": {
+              "Text": null
+            },
+            "IsAllowEditActualDate": {
+              "Value": false
+            },
+            "CaseSubTypes": {
+              "Text": null
+            },
+            "IsHideBillingStatus": {
+              "Value": false
+            },
+            "IsHideParcelNumber": {
+              "Value": false
+            },
+            "IsHideTotalCost": {
+              "Value": false
+            },
+            "IsHideCaseName": {
+              "Value": false
+            },
+            "IsHideCaseNumberDetail": {
+              "Value": false
+            },
+            "IsHideCaseSubType": {
+              "Value": false
+            },
+            "IsHideExpectedCloseDate": {
+              "Value": false
+            },
+            "IsRequireInspectionsTakePlaceinAboveOrder": {
+              "Value": false
+            },
+            "IsShowTaskTabOnProfile": {
+              "Value": false
+            },
+            "InspectionScheduling": {
+              "Text": "Custom"
+            },
+            "BillDueEmail": {
+              "Text": "<p>&lt;emailtemplate&gt;&lt;/emailtemplate&gt;You have money due. Please review the invoice and complete payment.</p><p>To view the invoice {{Clickhere}}.</p><p>To view your profile {{ProfileCaseLink}}.</p><p>To Pay online {{OnlinePaymentLink}}</p>"
+            },
+            "FormLetterInvoiceId": {
+              "Text": null
+            },
+            "IsAllowProfileRequestInspection": {
+              "Value": true
+            },
+            "IsHidePaymentTab": {
+              "Value": false
+            },
+            "IsHideMailingAddress": {
+              "Value": false
+            },
+            "IsHideCaseType": {
+              "Value": false
+            },
+            "IsHideAdminNotesTab": {
+              "Value": false
+            },
+            "IsHideAttachedDocTab": {
+              "Value": false
+            },
+            "IsHideAccDetailsTab": {
+              "Value": false
+            },
+            "IsHideContactTab": {
+              "Value": false
+            },
+            "IsHidePublicCommentTab": {
+              "Value": false
+            },
+            "IsHideRelatedTab": {
+              "Value": false
+            },
+            "IsHideSentMailTab": {
+              "Value": false
+            },
+            "IsHideSettingTab": {
+              "Value": false
+            },
+            "IsHideChangeLogTab": {
+              "Value": false
+            },
+            "IsHideTaskTab": {
+              "Value": false
+            },
+            "IsHideBillingStatusChangeLogTab": {
+              "Value": false
+            },
+            "ExpectedCloseDateText": {
+              "Text": null
+            },
+            "TaskText": {
+              "Text": null
+            },
+            "CaseNumberText": {
+              "Text": null
+            },
+            "AttachedItemText": {
+              "Text": null
+            },
+            "IsHideContentItem": {
+              "Value": false
+            },
+            "IsHideViewAllSubmission": {
+              "Value": false
+            },
+            "IsHideFillAndAttach": {
+              "Value": false
+            },
+            "IsHideShowOnFE": {
+              "Value": false
+            },
+            "IsHideActionButton": {
+              "Value": false
+            },
+            "IsHidePacketReportOpt": {
+              "Value": false
+            },
+            "IsHideCalenderOpt": {
+              "Value": false
+            },
+            "IsShowDefaultAdminField": {
+              "Value": false
+            },
+            "InspectionsOnCaseType": {
+              "Value": true
+            },
+            "AttachedDocNotiEmailSubject": {
+              "Text": null
+            },
+            "AttachedDocNotiEmailBody": {
+              "Text": "<p>&lt;emailtemplate&gt;&lt;/emailtemplate&gt;Please view the new uploaded files at {{ApplicationLocation}} by clicking {{AdminCaseLink}} for Record # {{Number}}.</p>"
+            },
+            "IsNotifyAssignTeamMembersOnFileUpload": {
+              "Value": false
+            },
+            "RequestForDocumentUploadEmailSubjectBluebeam": {
+              "Text": null
+            },
+            "RequestForDocumentUploadEmailBodyBluebeam": {
+              "Text": null
+            },
+            "EmailWhenRequestForDocumentUploadBluebeam": {
+              "Value": false
+            },
+            "InspectionSetProfileMenuText": {
+              "Text": null
+            },
+            "ActualCloseDateText": {
+              "Text": null
+            },
+            "IsHideDescription": {
+              "Value": false
+            },
+            "IsHideTag": {
+              "Value": false
+            },
+            "CaseTagText": {
+              "Text": null
+            },
+            "DefaultStatusOnCreation": {
+              "Text": null
+            },
+            "IsDoNotAddResponsiblePartybyDefault": {
+              "Value": false
+            },
+            "DefaultBillingStatus": {
+              "ContentItemIds": null
+            },
+            "IsLockCaseType": {
+              "Value": false
+            },
+            "UploadFinalReportOnClosedStatus": {
+              "Value": false
+            },
+            "IsAutoArchive": {
+              "Value": true
+            },
+            "Square9CategoryField": {
+              "Value": "0"
+            },
+            "Square9CategoryValue": {
+              "Text": null
+            },
+            "IsRequireAllInspectionsResolvedBeforeCaseIsClosed": {
+              "Value": false
+            },
+            "InspectionTypeResolved": {
+              "Text": null
+            },
+            "InspectionTypeResolvedText": {
+              "Text": null
+            },
+            "Department": {
+              "Text": null
+            },
+            "Roles": {
+              "Text": null
+            },
+            "IsAllowPublicView": {
+              "Value": false
+            },
+            "PermitExpiredStatus": {
+              "Text": null
+            },
+            "LaserficheTemplateId": {
+              "Text": null
+            },
+            "EnableLaserficheForCaseType": {
+              "Value": true
+            },
+            "LaserficheVolume": {
+              "Text": null
+            },
+            "IsShowNotesOnInspectionTab": {
+              "Value": false
+            },
+            "ExpirationReminderEmailSubject": {
+              "Text": null
+            },
+            "ExpirationReminderEmailBody": {
+              "Html": null
+            },
+            "IsNotifyCaseOwnerPermitExpiration": {
+              "Value": true
+            },
+            "IsNotifyApplicantPermitExpiration": {
+              "Value": false
+            },
+            "IsNotifyTeamMembersPermitExpiration": {
+              "Value": false
+            },
+            "IsNotifyAllContactsPermitExpiration": {
+              "Value": false
+            },
+            "IsHideInspectionMenuOnFE": {
+              "Value": true
+            },
+            "IsLockCaseSubType": {
+              "Value": false
+            },
+            "IsShowCaseSubTypesList": {
+              "Value": false
+            },
+            "AllowedInspectionStatuses": {
+              "Text": null
+            },
+            "SetBillingStatusAutomaticallyBasedOnAD": {
+              "Value": false
+            },
+            "PaidBillingStatus": {
+              "Text": null
+            },
+            "UnPaidBillingStatus": {
+              "Text": null
+            },
+            "CaseStatusOnPaidBillingStatus": {
+              "Text": null
+            },
+            "CaseStatusOnUnPaidBillingStatus": {
+              "Text": null
+            },
+            "ContactShareEmailSubject": {
+              "Text": null
+            },
+            "ContactShareEmailBody": {
+              "Text": null
+            },
+            "DoNotAllowCloseUntilAllChildrenAreClosed": {
+              "Value": false
+            },
+            "IsNotifyAssignOtherTeamMembersOnFileUpload": {
+              "Value": false
+            },
+            "OtherTeamMembersForDocNotification": {
+              "Text": null
+            },
+            "ShowCaseDetailsReport": {
+              "Value": false
+            },
+            "PermitSuspendedStatus": {
+              "Text": null
+            },
+            "LaserficheFilePath": {
+              "Text": null
+            },
+            "IsHideTaskStatusChangeLogTab": {
+              "Value": false
+            },
+            "CaseTypeCategory": {
+              "Text": null
+            },
+            "OnlyAllowEditAssignedTeamMembers": {
+              "Value": false
+            },
+            "IsHidePaymentHistoryLogTab": {
+              "Value": false
+            },
+            "IsHideInspectionHistoryLogTab": {
+              "Value": false
+            },
+            "IsHideTeamMemberAssignmentLogTab": {
+              "Value": false
+            },
+            "IsDefaultAttachDocShowOnFE": {
+              "Value": true
+            },
+            "DoNotCancelFutureInspectionsOnCaseClose": {
+              "Value": true
+            },
+            "IsHideQuickRefNumber": {
+              "Value": false
+            },
+            "QuickRefNumberText": {
+              "Text": null
+            },
+            "IsChangeStatusOfCaseAllInspectionsareResolved": {
+              "Value": false
+            },
+            "InspectionCaseStatus": {
+              "Text": null
+            },
+            "RequestForDocumentUploadEmailSubjectPlanReview": {
+              "Text": null
+            },
+            "RequestForDocumentUploadEmailBodyPlanReview": {
+              "Text": null
+            },
+            "NotifyApplicant": {
+              "Value": false
+            },
+            "NotifyAllContacts": {
+              "Value": false
+            },
+            "Square9ShowAdminFieldsInReport": {
+              "Value": false
+            },
+            "Square9SendReportOnCaseStatusIds": {
+              "ContentItemIds": null
+            },
+            "IsRequiredActualCloseDate": {
+              "Value": false
+            },
+            "IsRequiredBillingStatus": {
+              "Value": false
+            },
+            "IsRequiredCaseName": {
+              "Value": false
+            },
+            "IsRequiredCaseNumberDetail": {
+              "Value": false
+            },
+            "IsRequiredCaseSubTypes": {
+              "Value": false
+            },
+            "IsRequiredCaseTags": {
+              "Value": false
+            },
+            "IsRequiredDescription": {
+              "Value": false
+            },
+            "IsRequiredExpectedCloseDate": {
+              "Value": false
+            },
+            "IsRequiredParcelNumber": {
+              "Value": false
+            },
+            "IsRequiredQuickRefNumber": {
+              "Value": false
+            },
+            "IsRequiredPermitIssueDate": {
+              "Value": false
+            },
+            "IsRequiredPermitExpirationDate": {
+              "Value": false
+            },
+            "IsRequiredProjectValuationDate": {
+              "Value": false
+            },
+            "IsRequiredCaseOwner": {
+              "Value": false
+            },
+            "DocumentTypes": {
+              "Text": null
+            },
+            "FormLetters": {
+              "Text": null
+            },
+            "CombineSequence": {
+              "Text": null
+            }
+          },
+          "TitlePart": {}
+        }
+      ]
+    }
+  ]
+}

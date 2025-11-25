@@ -7,8 +7,8 @@
           <button @click="router.back()" class="flex items-center gap-2 text-[rgb(var(--text-muted))] hover:text-primary mb-2">
             Back to Dashboard
           </button>
-          <h1 class="text-4xl font-bold">Case Workflows</h1>
-          <p class="text-lg text-[rgb(var(--text-muted))] mt-2">Define case types and automated status flows</p>
+          <h1 class="text-4xl font-bold">License Workflows</h1>
+          <p class="text-lg text-[rgb(var(--text-muted))] mt-2">Define license status flows</p>
         </div>
 
         <div class="flex items-center gap-4">
@@ -43,6 +43,18 @@
                     Manage Subtypes
                   </button>
                 </MenuItem>
+
+                <!-- Generate (placeholder for future) -->
+                <MenuItem v-slot="{ active }">
+                  <button
+                    @click="generateWorkflows"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition"
+                    :class="active ? 'bg-surface' : ''"
+                  >
+                    <ArrowDownTrayIcon class="w-5 h-5 text-purple-600" />
+                    Generate Workflows
+                  </button>
+                </MenuItem>
               </MenuItems>
             </Transition>
           </Menu>
@@ -53,24 +65,24 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
-      <!-- Case Types -->
+      <!-- License Types -->
       <section>
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold">Case Types</h2>
+          <h2 class="text-2xl font-bold">License Types</h2>
           <button @click="openNewType"
             class="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition flex items-center gap-2">
             <PlusIcon class="w-5 h-5" />
-            New Case Type
+            New License Type
           </button>
         </div>
         <TransitionGroup name="list" tag="div" class="space-y-5">
-          <div v-for="type in caseTypes" :key="type.id"
+          <div v-for="type in licenseTypes" :key="type.id"
             class="relative bg-surface rounded-2xl shadow-base border border-base transition-all duration-300 hover:shadow-lg group">
             <!-- TrashIcon (hover right side only) -->
             <div class="absolute inset-y-0 right-0 w-32 flex items-center justify-center pointer-events-none">
-              <button @click.stop="deleteCaseType(type.id)"
+              <button @click.stop="deleteLicenseType(type.id)"
                 class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                title="Delete case type">
+                title="Delete license type">
                 <TrashIcon class="w-5 h-5" />
               </button>
             </div>
@@ -78,9 +90,9 @@
             <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-[rgb(var(--bg))] transition">
               <!-- Workflow Tag -->
               <div v-if="type.workflowId" class="absolute top-4 right-8">
-                <button @click.stop="openWorkflowEditor(workflowStore.get(type.workflowId)!)"
+                <button @click.stop="openWorkflowEditor(licenseWorkflowStore.get(type.workflowId)!)"
                   class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition">
-                  Workflow: {{ workflowStore.get(type.workflowId)?.name || 'Untitled' }}
+                  Workflow: {{ licenseWorkflowStore.get(type.workflowId)?.name || 'Untitled' }}
                 </button>
               </div>
 
@@ -90,7 +102,7 @@
               </p>
 
               <div class="mt-4 flex flex-wrap gap-2">
-                <span v-for="sub in sortedSubtypeNames(type.subtypes)" :key="sub.id"
+                <span v-for="sub in sortedLicenseSubtypeNames(type.subtypes)" :key="sub.id"
                   class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium">
                   {{ sub.name }}
                 </span>
@@ -99,19 +111,19 @@
           </div>
         </TransitionGroup>
 
-        <p v-if="!caseTypes.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
-          No case types yet — click "+ New Case Type" to create one
+        <p v-if="!licenseTypes.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
+          No license types yet — click "+ New License Type" to create one
         </p>
       </section>
 
-      <!-- Workflows -->
+      <!-- License Workflows -->
       <section>
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-2xl font-bold">Workflows</h2>
+          <h2 class="text-2xl font-bold">License Workflows</h2>
           <button @click="addWorkflow"
             class="px-5 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
             <PlusIcon class="w-5 h-5" />
-            New Workflow
+            New License Workflow
           </button>
         </div>
         <TransitionGroup name="list" tag="div" class="space-y-4">
@@ -132,7 +144,7 @@
                 <div v-for="step in wf.steps" :key="step.id" class="flex-shrink-0">
                   <div
                     class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full text-sm font-medium shadow">
-                    {{ statusTitle(step.statusId) }}
+                    {{ licenseStatusTitle(step.statusId) }}
                   </div>
                 </div>
               </div>
@@ -141,15 +153,15 @@
         </TransitionGroup>
 
         <p v-if="!workflows.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
-          No workflows yet — click "+ New Workflow" to create one
+          No license workflows yet — click "+ New License Workflow" to create one
         </p>
       </section>
     </main>
 
-    <!-- ==================== CASE TYPE MODAL ==================== -->
+    <!-- ==================== LICENSE WORKFLOW EDITOR MODAL ==================== -->
     <teleport to="body">
-  <TransitionRoot :show="caseTypeModalOpen" appear>
-    <Dialog as="div" class="relative z-50" @close="closeCaseTypeModal">
+  <TransitionRoot :show="workflowModalOpen" appear>
+    <Dialog as="div" class="relative z-50" @close="closeWorkflowModal">
       <!-- Backdrop -->
       <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
         leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
@@ -161,9 +173,85 @@
         <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
           enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
           leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
+          <DialogPanel class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
+            <h3 v-if="editingWorkflow" class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+              Edit License Workflow: {{ editingWorkflow.name }}
+            </h3>
+
+            <div v-if="editingWorkflow" class="space-y-6">
+              <!-- Workflow Name -->
+              <input v-model="editingWorkflow.name" placeholder="License workflow name"
+                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-xl font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-6" />
+
+              <!-- Add Status -->
+              <div class="mb-8">
+                <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-3">Add License Status</p>
+                <select v-model="pendingStatusId" @change="addStatusToWorkflow"
+                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                  <option :value="null" disabled>Select a license status...</option>
+                  <option v-for="status in availableLicenseStatuses" :key="status.id" :value="status.id">{{ status.title }}</option>
+                </select>
+              </div>
+
+              <!-- Workflow Steps -->
+              <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-4">License Workflow Steps (drag to reorder)</p>
+              <draggable v-model="editingWorkflow.steps" item-key="id" handle=".handle" :force-fallback="true"
+                fallback-tolerance="5"
+                class="min-h-80 bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-dashed border-purple-300 dark:border-purple-700">
+                <template #item="{ element: step }">
+                  <div
+                    class="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-base border border-purple-200 dark:border-purple-700 flex items-center justify-between mb-4 handle cursor-move select-none">
+                    <div class="flex items-center gap-5">
+                      <Bars3Icon class="w-6 h-6 text-purple-600 handle" />
+                      <span class="text-lg font-semibold text-purple-900 dark:text-purple-300">{{ licenseStatusTitle(step.statusId) }}</span>
+                    </div>
+                    <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
+                      <TrashIcon class="w-5 h-5" />
+                    </button>
+                  </div>
+                </template>
+              </draggable>
+
+              <div v-if="!editingWorkflow.steps.length"
+                class="text-center text-purple-400 dark:text-purple-500 py-20 italic text-lg">
+                Select license statuses from the dropdown above
+              </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="flex justify-end gap-4 mt-8">
+              <button @click="closeWorkflowModal"
+                class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700">
+                Cancel
+              </button>
+              <button @click="saveWorkflow"
+                class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Save License Workflow</button>
+            </div>
+          </DialogPanel>
+        </TransitionChild>
+      </div>
+    </Dialog>
+  </TransitionRoot>
+    </teleport>
+
+    <!-- ==================== LICENSE TYPE MODAL ==================== -->
+    <teleport to="body">
+  <TransitionRoot :show="licenseTypeModalOpen" appear>
+    <Dialog as="div" class="relative z-50" @close="closeLicenseTypeModal">
+      <!-- Backdrop -->
+      <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
+        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      </TransitionChild>
+
+      <!-- Modal Panel -->
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
+          enter-to-class="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
+          leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
           <DialogPanel class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-3xl w-full p-8 max-h-screen overflow-y-auto">
             <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-              {{ editingType?.id ? 'Edit' : 'New' }} Case Type
+              {{ editingType?.id ? 'Edit' : 'New' }} License Type
             </h3>
 
             <div v-if="editingType" class="space-y-6">
@@ -174,14 +262,14 @@
                 </label>
                 <input v-model="editingType.title"
                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  placeholder="e.g. Building Permit" autofocus />
+                  placeholder="e.g. Building License" autofocus />
               </div>
 
               <!-- Prefix / Suffix -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Number Prefix</label>
-                  <input v-model="editingType.prefix" placeholder="BLDG-"
+                  <input v-model="editingType.prefix" placeholder="LIC-"
                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
                 </div>
                 <div>
@@ -201,7 +289,7 @@
                 <label class="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" v-model="editingType.autoLicense"
                     class="w-5 h-5 text-blue-600 rounded" />
-                  <span>Auto-create License on Approval</span>
+                  <span>Auto-renew on Approval</span>
                 </label>
               </div>
 
@@ -211,12 +299,12 @@
                 <select v-model="pendingSubtypeId" @change="addSubtypeToType"
                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                   <option :value="null">Add a subtype...</option>
-                  <option v-for="sub in sortedSubtypes" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
+                  <option v-for="sub in sortedLicenseSubtypes" :key="sub.id" :value="sub.id">{{ sub.name }}</option>
                 </select>
                 <div class="mt-4 flex flex-wrap gap-3">
                   <div v-for="subId in editingType.subtypes" :key="subId"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 rounded-full text-sm font-medium">
-                    <span>{{ subtypeName(subId) }}</span>
+                    <span>{{ licenseSubtypeName(subId) }}</span>
                     <button @click="editingType.subtypes = editingType.subtypes.filter(id => id !== subId)"
                       class="text-blue-600 hover:text-blue-800">
                       <TrashIcon class="w-4 h-4" />
@@ -238,13 +326,13 @@
 
             <!-- Modal Actions -->
             <div class="flex justify-end gap-4 mt-8">
-              <button @click="closeCaseTypeModal"
+              <button @click="closeLicenseTypeModal"
                 class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700">
                 Cancel
               </button>
-              <button @click="saveCaseType" :disabled="!editingType?.title?.trim()"
+              <button @click="saveLicenseType" :disabled="!editingType?.title?.trim()"
                 class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition">
-                Save Case Type
+                Save License Type
               </button>
             </div>
           </DialogPanel>
@@ -254,85 +342,7 @@
   </TransitionRoot>
 </teleport>
 
-
-    <!-- ==================== WORKFLOW EDITOR MODAL ==================== -->
-    <teleport to="body">
-  <TransitionRoot :show="workflowModalOpen" appear>
-    <Dialog as="div" class="relative z-50" @close="closeWorkflowModal">
-      <!-- Backdrop -->
-      <TransitionChild enter="ease-out duration-300" enter-from="opacity-0" enter-to="opacity-100"
-        leave="ease-in duration-200" leave-from="opacity-100" leave-to="opacity-0">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-      </TransitionChild>
-
-      <!-- Modal Panel -->
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
-          enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
-          leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
-          <DialogPanel class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-4xl w-full p-8 max-h-screen overflow-y-auto">
-            <h3 v-if="editingWorkflow" class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-              Edit Workflow: {{ editingWorkflow.name }}
-            </h3>
-
-            <div v-if="editingWorkflow" class="space-y-6">
-              <!-- Workflow Name -->
-              <input v-model="editingWorkflow.name" placeholder="Workflow name"
-                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-xl font-medium bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-6" />
-
-              <!-- Add Status -->
-              <div class="mb-8">
-                <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-3">Add Status</p>
-                <select v-model="pendingStatusId" @change="addStatusToWorkflow"
-                  class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                  <option :value="null" disabled>Select a status...</option>
-                  <option v-for="status in availableStatuses" :key="status.id" :value="status.id">{{ status.title }}</option>
-                </select>
-              </div>
-
-              <!-- Workflow Steps -->
-              <p class="text-sm font-medium text-purple-700 dark:text-purple-300 mb-4">Workflow Steps (drag to reorder)</p>
-              <draggable v-model="editingWorkflow.steps" item-key="id" handle=".handle" :force-fallback="true"
-                fallback-tolerance="5"
-                class="min-h-80 bg-white dark:bg-gray-800 rounded-xl p-6 border-2 border-dashed border-purple-300 dark:border-purple-700">
-                <template #item="{ element: step }">
-                  <div
-                    class="p-5 bg-white dark:bg-gray-800 rounded-xl shadow-base border border-purple-200 dark:border-purple-700 flex items-center justify-between mb-4 handle cursor-move select-none">
-                    <div class="flex items-center gap-5">
-                      <Bars3Icon class="w-6 h-6 text-purple-600 handle" />
-                      <span class="text-lg font-semibold text-purple-900 dark:text-purple-300">{{ statusTitle(step.statusId) }}</span>
-                    </div>
-                    <button @click.stop="removeStep(step.id)" class="text-red-600 hover:text-red-800">
-                      <TrashIcon class="w-5 h-5" />
-                    </button>
-                  </div>
-                </template>
-              </draggable>
-
-              <div v-if="!editingWorkflow.steps.length"
-                class="text-center text-purple-400 dark:text-purple-500 py-20 italic text-lg">
-                Select statuses from the dropdown above
-              </div>
-            </div>
-
-            <!-- Modal Actions -->
-            <div class="flex justify-end gap-4 mt-8">
-              <button @click="closeWorkflowModal"
-                class="px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700">
-                Cancel
-              </button>
-              <button @click="saveWorkflow"
-                class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Save Workflow</button>
-            </div>
-          </DialogPanel>
-        </TransitionChild>
-      </div>
-    </Dialog>
-  </TransitionRoot>
-</teleport>
-
-
-    <!-- ==================== SUBTYPES MODAL ==================== -->
+    <!-- ==================== LICENSE SUBTYPES MODAL ==================== -->
     <teleport to="body">
       <TransitionRoot :show="subtypesModalOpen" appear>
         <Dialog as="div" class="relative z-50" @close="subtypesModalOpen = false">
@@ -343,10 +353,10 @@
 
           <div class="fixed inset-0 flex items-center justify-center p-4">
             <TransitionChild enter="ease-out duration-300" enter-from="opacity-0 translate-y-4 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
+              enter-to-class="opacity-100 translate-y-0 sm:scale-100" leave="ease-in duration-200"
               leave-from="opacity-100 translate-y-0 sm:scale-100" leave-to="opacity-0 translate-y-4 sm:scale-95">
               <DialogPanel class="bg-surface rounded-3xl shadow-2xl max-w-2xl w-full p-8">
-                <h3 class="text-2xl font-bold mb-6">Manage Case Subtypes</h3>
+                <h3 class="text-2xl font-bold mb-6">Manage License Subtypes</h3>
                 <div class="flex gap-3 mb-6">
                   <input v-model="newSubtypeName" @keyup.enter="addSubtype" placeholder="e.g. Residential"
                     class="flex-1 px-4 py-3 border border-base rounded-lg focus:ring-2 focus:ring-emerald-500 bg-bg" />
@@ -354,7 +364,7 @@
                     class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50">Add</button>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                  <div v-for="sub in sortedSubtypes" :key="sub.id"
+                  <div v-for="sub in sortedLicenseSubtypes" :key="sub.id"
                     class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 rounded-full text-sm font-medium">
                     <span>{{ sub.name }}</span>
                     <button @click="removeSubtype(sub.id)" class="text-emerald-600 hover:text-emerald-800">
@@ -398,30 +408,31 @@ import {
   MenuItem
 } from '@headlessui/vue'
 
-import { useStatusStore } from '@/stores/statusStore'
-import { useCaseSubTypeStore } from '@/stores/caseSubTypeStore'
-import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
-import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
+import { useLicenseStatusStore } from '@/stores/licenseStatusStore'
+import { useLicenseWorkflowStore, type LicenseWorkflow } from '@/stores/licenseWorkflowStore'
+import { useLicenseSubTypeStore } from '@/stores/licenseSubTypeStore'
+import { useLicenseTypeStore, type LicenseType } from '@/stores/licenseTypeStore'
 
 import {
   PlusIcon,
   TrashIcon,
-  CogIcon,
   Bars3Icon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
+  ArrowDownTrayIcon,
+  CogIcon
 } from '@heroicons/vue/24/outline'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 const router = useRouter()
-const statusStore = useStatusStore()
-const subtypeStore = useCaseSubTypeStore()
-const caseTypeStore = useCaseTypeStore()
-const workflowStore = useWorkflowStore()
+const licenseStatusStore = useLicenseStatusStore()
+const licenseWorkflowStore = useLicenseWorkflowStore()
+const licenseSubTypeStore = useLicenseSubTypeStore()
+const licenseTypeStore = useLicenseTypeStore()
 
-const statuses = computed(() => statusStore.list.value || [])
-const subtypes = computed(() => subtypeStore.list.value || [])
-const caseTypes = computed(() => caseTypeStore.list.value || [])
-const workflows = computed(() => workflowStore.list.value)
+const licenseStatuses = computed(() => licenseStatusStore.list.value || [])
+const workflows = computed(() => licenseWorkflowStore.list.value)
+const licenseSubtypes = computed(() => licenseSubTypeStore.list.value || [])
+const licenseTypes = computed(() => licenseTypeStore.list.value || [])
 
 const showToast = ref(false)
 const toastMessage = ref('')
@@ -437,43 +448,43 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
   }, 3000)
 }
 
-const sortedSubtypes = computed(() => [...subtypes.value].sort((a, b) => a.name.localeCompare(b.name)))
-const sortedSubtypeNames = (ids: string[]) => ids.map(id => ({ id, name: subtypeName(id) })).sort((a, b) => a.name.localeCompare(b.name))
+const licenseStatusTitle = (id: string) => licenseStatuses.value.find((s: { id: string }) => s.id === id)?.title || 'Unknown'
 
-const subtypeName = (id: string) => subtypes.value.find(s => s.id === id)?.name || 'Unknown'
-const statusTitle = (id: string) => statuses.value.find((s: { id: string }) => s.id === id)?.title || 'Unknown'
-
-const editingType = ref<CaseType | null>(null)
-const editingWorkflow = ref<Workflow | null>(null)
+const editingWorkflow = ref<LicenseWorkflow | null>(null)
+const editingType = ref<LicenseType | null>(null)
 const newSubtypeName = ref('')
-const pendingSubtypeId = ref<string | null>(null)
 const pendingStatusId = ref<string | null>(null)
+const pendingSubtypeId = ref<string | null>(null)
 
 // Modal open states — ref + watch = 100% crash-proof
-const caseTypeModalOpen = ref(false)
 const workflowModalOpen = ref(false)
+const licenseTypeModalOpen = ref(false)
 const subtypesModalOpen = ref(false)
 
 // Sync editing state → modal visibility
-watch(editingType, (val) => caseTypeModalOpen.value = !!val)
 watch(editingWorkflow, (val) => workflowModalOpen.value = !!val)
+watch(editingType, (val) => licenseTypeModalOpen.value = !!val)
 
-// Available statuses for current workflow
-const availableStatuses = computed(() =>
+// Available license statuses for current workflow
+const availableLicenseStatuses = computed(() =>
   editingWorkflow.value
-    ? statuses.value.filter((s: { id: string }) => !editingWorkflow.value!.steps.some(st => st.statusId === s.id))
+    ? licenseStatuses.value.filter((s: { id: string }) => !editingWorkflow.value!.steps.some(st => st.statusId === s.id))
     : []
 )
 
 // Safe close handlers
-const closeCaseTypeModal = () => {
-  editingType.value = null
-}
 const closeWorkflowModal = () => {
   editingWorkflow.value = null
 }
 
-// Actions
+const closeLicenseTypeModal = () => {
+  editingType.value = null
+}
+
+const openWorkflowEditor = (wf: LicenseWorkflow) => {
+  editingWorkflow.value = { ...wf, steps: [...wf.steps] }
+}
+
 const openNewType = () => {
   editingType.value = {
     id: crypto.randomUUID(),
@@ -487,12 +498,16 @@ const openNewType = () => {
   }
 }
 
-const openEditType = (type: CaseType) => {
+const openEditType = (type: LicenseType) => {
   editingType.value = { ...type }
 }
 
-const openWorkflowEditor = (wf: Workflow) => {
-  editingWorkflow.value = { ...wf, steps: [...wf.steps] }
+const addWorkflow = () => {
+  editingWorkflow.value = {
+    id: crypto.randomUUID(),
+    name: 'New License Workflow',
+    steps: []
+  }
 }
 
 const addSubtypeToType = () => {
@@ -503,27 +518,36 @@ const addSubtypeToType = () => {
   pendingSubtypeId.value = null
 }
 
-const saveCaseType = async () => {
+const saveLicenseType = async () => {
   if (!editingType.value?.title?.trim()) return
-  await caseTypeStore.save(editingType.value)
+  await licenseTypeStore.save(editingType.value)
   editingType.value = null
-  showToastMessage('Case Type Saved')
+  showToastMessage('License Type Saved')
 }
 
-const deleteCaseType = async (id: string) => {
-  if (confirm('Delete this case type? This cannot be undone.')) {
-    await caseTypeStore.remove(id)
-    showToastMessage('Case Type Deleted', 'info')
+const deleteLicenseType = async (id: string) => {
+  if (confirm('Delete this license type? This cannot be undone.')) {
+    await licenseTypeStore.remove(id)
+    showToastMessage('License Type Deleted', 'info')
   }
 }
 
-const addWorkflow = () => {
-  editingWorkflow.value = {
-    id: crypto.randomUUID(),
-    name: 'New Workflow',
-    steps: []
+const addSubtype = async () => {
+  if (newSubtypeName.value.trim()) {
+    await licenseSubTypeStore.add(newSubtypeName.value.trim())
+    newSubtypeName.value = ''
   }
 }
+
+const removeSubtype = async (id: string) => {
+  await licenseSubTypeStore.remove(id)
+  showToastMessage('License Subtype Deleted', 'info')
+}
+
+const sortedLicenseSubtypes = computed(() => [...licenseSubtypes.value].sort((a, b) => a.name.localeCompare(b.name)))
+const sortedLicenseSubtypeNames = (ids: string[]) => ids.map(id => ({ id, name: licenseSubtypeName(id) })).sort((a, b) => a.name.localeCompare(b.name))
+
+const licenseSubtypeName = (id: string) => licenseSubtypes.value.find(s => s.id === id)?.name || 'Unknown'
 
 const addStatusToWorkflow = () => {
   if (!pendingStatusId.value || !editingWorkflow.value) return
@@ -541,29 +565,21 @@ const removeStep = (id: string) => {
 
 const saveWorkflow = async () => {
   if (!editingWorkflow.value || editingWorkflow.value.steps.length === 0) {
-    alert('Please add at least one status')
+    alert('Please add at least one license status')
     return
   }
-  await workflowStore.save(editingWorkflow.value)
+  await licenseWorkflowStore.save(editingWorkflow.value)
   editingWorkflow.value = null
-  showToastMessage('Workflow Saved')
+  showToastMessage('License Workflow Saved')
 }
 
 const deleteWorkflow = async (id: string) => {
-  await workflowStore.remove(id)
-  showToastMessage('Workflow Deleted', 'info')
+  await licenseWorkflowStore.remove(id)
+  showToastMessage('License Workflow Deleted', 'info')
 }
 
-const addSubtype = async () => {
-  if (newSubtypeName.value.trim()) {
-    await subtypeStore.add(newSubtypeName.value.trim())
-    newSubtypeName.value = ''
-  }
-}
-
-const removeSubtype = async (id: string) => {
-  await subtypeStore.remove(id)
-  showToastMessage('Subtype Deleted', 'info')
+const generateWorkflows = () => {
+  showToastMessage('Generate functionality coming soon!', 'info')
 }
 
 </script>

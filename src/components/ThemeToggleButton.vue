@@ -2,17 +2,17 @@
     <button @click="toggleTheme" :disabled="refreshing"
         :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'" class="relative p-2.5 rounded-xl transition-all duration-300
            bg-[rgb(var(--bg))] text-[rgb(var(--text))]
-           border border-gray-300 dark:border-slate-600
-           hover:shadow-lg hover:scale-110 active:scale-95
+           border border-gray-400 dark:border-slate-600
+           shadow-sm hover:shadow-md hover:scale-110 active:scale-95
            disabled:opacity-50 disabled:cursor-not-allowed">
         <!-- Sun (Light Mode) -->
-        <SunIcon v-if="!isDark && !refreshing" class="w-5 h-5" />
+        <SunIcon v-if="!isDark && !refreshing" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
 
         <!-- Moon (Dark Mode) -->
-        <MoonIcon v-if="isDark && !refreshing" class="w-5 h-5" />
+        <MoonIcon v-if="isDark && !refreshing" class="w-5 h-5 text-slate-600 dark:text-slate-300" />
 
         <!-- Spinner -->
-        <svg v-if="refreshing" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-if="refreshing" class="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4" />
             <path class="opacity-75"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />

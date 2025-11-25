@@ -55,3 +55,22 @@ html.dark {
 .shadow-md      { box-shadow: 0 4px 6px rgb(var(--shadow)), 0 2px 4px rgb(var(--shadow)); }
 .shadow-lg      { box-shadow: 0 10px 15px rgb(var(--shadow)), 0 4px 6px rgb(var(--shadow)); }
 .ring-focus     { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--ring))/0.5]; }
+
+/* Smooth rounded scrollbars (theme-aware) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--surface));
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border));
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--text-muted));
+}

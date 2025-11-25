@@ -11,16 +11,16 @@
           >
             <ArrowLeftIcon class="w-6 h-6" />
           </button>
-          <h1 class="text-3xl font-bold">Statuses</h1>
+          <h1 class="text-3xl font-bold">License Statuses</h1>
         </div>
 
         <div class="flex items-center gap-4">
           <button
-            @click="router.push('/statuses/new')"
+            @click="router.push('/license-statuses/new')"
             class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <PlusIcon class="w-5 h-5" />
-            Add Status
+            Add License Status
           </button>
 
           <!-- ACTION MENU (Import) -->
@@ -65,29 +65,29 @@
 
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-6 py-10">
-      <!-- Status List Container -->
+      <!-- License Status List Container -->
       <div class="bg-surface rounded-2xl shadow-lg border border-base overflow-hidden">
-        <div v-if="!displayedStatuses.length" class="text-center py-20 px-8">
+        <div v-if="!displayedLicenseStatuses.length" class="text-center py-20 px-8">
           <div class="bg-surface border border-base w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
             <DocumentTextIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
           </div>
-          <h3 class="text-xl font-semibold mb-2">No statuses yet</h3>
-          <p class="text-[rgb(var(--text-muted))]">Create your first status to get started.</p>
+          <h3 class="text-xl font-semibold mb-2">No license statuses yet</h3>
+          <p class="text-[rgb(var(--text-muted))]">Create your first license status to get started.</p>
         </div>
 
         <ul v-else class="divide-y divide-base">
           <li
-            v-for="s in displayedStatuses"
+            v-for="s in displayedLicenseStatuses"
             :key="s.id"
             class="group hover:bg-[rgb(var(--bg))] transition-colors"
           >
             <div
               class="px-8 py-6 flex items-center justify-between cursor-pointer"
-              @click="router.push(`/statuses/${s.id}`)"
+              @click="router.push(`/license-statuses/${s.id}`)"
             >
               <div class="flex-1">
                 <h3 class="text-lg font-medium">
-                  {{ s.title?.trim() || "(Untitled status)" }}
+                  {{ s.title?.trim() || "(Untitled license status)" }}
                 </h3>
                 
                 <!-- Notification Pills -->
@@ -143,7 +143,7 @@
                 <button
                   @click.stop="remove(s.id)"
                   class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                  title="Delete status"
+                  title="Delete license status"
                 >
                   <TrashIcon class="w-5 h-5" />
                 </button>
@@ -185,7 +185,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStatusStore } from '@/stores/statusStore'
+import { useLicenseStatusStore } from '@/stores/licenseStatusStore'
 import DashboardButton from '@/components/DashboardButton.vue'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 import { importStatusesFromFile } from '@/utils/statusImportUtils'
@@ -213,7 +213,7 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-const { list, remove } = useStatusStore()
+const { list, remove } = useLicenseStatusStore()
 
 // Toast state
 const showToast = ref(false)
@@ -231,7 +231,7 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
 }
 
 // Safely filter + clean display
-const displayedStatuses = computed(() => {
+const displayedLicenseStatuses = computed(() => {
   const arr = Array.isArray(list.value) ? list.value : []
   return arr.filter((s: any) => s && s.id)  // hides totally broken entries
 })
@@ -263,7 +263,7 @@ async function handleFileUpload(event: Event) {
     const result = await importStatusesFromFile(content, file.name)
 
     if (result.success) {
-      showToastMessage(`Successfully imported ${result.importedCount} statuses!`, 'success')
+      showToastMessage(`Successfully imported ${result.importedCount} license statuses!`, 'success')
     } else {
       showToastMessage(`Import failed: ${result.message}`, 'error')
       if (result.errors && result.errors.length > 0) {

@@ -14,6 +14,11 @@ export interface NotificationConfig {
   doNotSendMailWhenApplicantAndApproverSame?: boolean
   attachPermitTypes?: boolean
   attachFormLetters?: boolean
+  notifyAssignedTeamMembersTemplate?: string
+  notifyOtherTeamMembersTemplate?: string
+  notifyApplicantTemplate?: string
+  notifyAllContactsTemplate?: string
+  notifyOtherRecipientTemplate?: string
 }
 
 export interface InspectionWorkflow {

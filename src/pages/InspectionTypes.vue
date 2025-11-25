@@ -173,7 +173,14 @@ function formatDuration(hours: number): string {
 }
 
 function activeStatuses(wf: any) {
-  return Object.values(wf).filter((c: any) => c?.enabled).length
+  const statusKeys = ['AcceptedInvite', 'Approved', 'CancelledByAdmin', 'CancelledByUser', 'Completed', 'DeclinedInvite', 'Failed', 'InProgress', 'NotRequired', 'Submitted']
+  const notifyKeys = ['notifyAssignedTeamMembers', 'notifyOtherTeamMembers', 'notifyApplicant', 'notifyAllContacts', 'notifyOtherRecipient']
+  
+  return statusKeys.filter(statusKey => {
+    const config = wf[statusKey]
+    if (!config) return false
+    return notifyKeys.some(notifyKey => config[notifyKey] === true)
+  }).length
 }
 function importFile() {
   fileInputRef.value?.click()

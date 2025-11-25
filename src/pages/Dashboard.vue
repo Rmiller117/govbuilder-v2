@@ -90,9 +90,10 @@
           </div>
         </router-link>
 
-        <!-- License Statuses – Coming Soon -->
-        <div class="group opacity-60">
-          <div class="bg-surface rounded-2xl border border-base shadow-base h-full flex flex-col">
+        <!-- License Statuses -->
+        <router-link to="/license-statuses" class="group block">
+          <div
+            class="bg-surface rounded-2xl border border-base shadow-base hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
             <div class="p-7 flex-grow">
               <div class="flex items-center mb-5">
                 <div class="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/40">
@@ -104,15 +105,16 @@
                 Manage license-specific statuses and renewal workflows
               </p>
             </div>
-            <div class="px-7 py-4 border-t border-base bg-purple-50 dark:bg-purple-900/20">
-              <span class="text-purple-600 dark:text-purple-400 font-medium">Coming Soon</span>
+            <div class="px-7 py-4 border-t border-base bg-[rgb(var(--bg))/0.03]">
+              <span class="text-purple-600 dark:text-purple-400 font-medium group-hover:translate-x-1 transition">Edit License Statuses</span>
             </div>
           </div>
-        </div>
+        </router-link>
 
-        <!-- License Workflows – Coming Soon -->
-        <div class="group opacity-60">
-          <div class="bg-surface rounded-2xl border border-base shadow-base h-full flex flex-col">
+        <!-- License Workflows -->
+        <router-link to="/license-workflows" class="group block">
+          <div
+            class="bg-surface rounded-2xl border border-base shadow-base hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
             <div class="p-7 flex-grow">
               <div class="flex items-center mb-5">
                 <div class="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/40">
@@ -124,11 +126,11 @@
                 Set up renewal reminders, expirations, and compliance flows
               </p>
             </div>
-            <div class="px-7 py-4 border-t border-base bg-amber-50 dark:bg-amber-900/20">
-              <span class="text-amber-600 dark:text-amber-400 font-medium">Coming Soon</span>
+            <div class="px-7 py-4 border-t border-base bg-[rgb(var(--bg))/0.03]">
+              <span class="text-amber-600 dark:text-amber-400 font-medium group-hover:translate-x-1 transition">Edit License Workflows</span>
             </div>
           </div>
-        </div>
+        </router-link>
 
         <!-- Inspection Types -->
         <router-link to="/inspection-types" class="group block">

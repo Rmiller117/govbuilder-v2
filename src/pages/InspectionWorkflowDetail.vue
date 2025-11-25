@@ -205,7 +205,6 @@ async function handleSave() {
     ...Object.fromEntries(
       Object.entries(localConfigs.value)
         .map(([k, c]: [string, any]) => {
-          if (!c.enabled) return [k, undefined]
           const cleaned = { ...c }
           // Remove template if the switch is off
           notifyKeys.forEach(field => {
@@ -213,7 +212,6 @@ async function handleSave() {
           })
           return [k, cleaned]
         })
-        .filter(([, v]) => v !== undefined)
     ),
   }
 

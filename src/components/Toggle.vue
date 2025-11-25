@@ -22,7 +22,7 @@ const emit = defineEmits<{
     <div
       class="
         w-14 h-8 rounded-full transition-colors
-        bg-[rgb(var(--surface))] border border-base
+        bg-gray-200 dark:bg-[rgb(var(--surface))] border border-gray-300 dark:border-base
         peer-checked:bg-[rgb(var(--primary))]
         peer-focus-visible:ring-2 peer-focus-visible:ring-[rgb(var(--ring))/0.4]
       "
@@ -32,7 +32,7 @@ const emit = defineEmits<{
     <div
       class="
         absolute top-0.5 left-0.5 h-7 w-7 rounded-full
-        bg-[rgb(var(--bg))] border border-base transition-all
+        bg-white dark:bg-[rgb(var(--bg))] border border-gray-400 dark:border-base shadow-sm
         peer-checked:left-[calc(100%-1.75rem)]
       "
     ></div>

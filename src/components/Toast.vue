@@ -56,4 +56,6 @@ defineProps<{
   message: string
   type?: 'success' | 'error' | 'info'
 }>()
+
+defineEmits(['close'])
 </script>

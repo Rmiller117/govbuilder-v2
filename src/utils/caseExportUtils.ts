@@ -67,18 +67,6 @@ export interface OrchardCoreRecipe {
 }
 
 /**
- * Convert JSON to Orchard Core format with proper Unicode escaping
- */
-function escapeForOrchardCore(jsonStr: string): string {
-  let result = jsonStr
-  result = result.replace(/&/g, '\u0026')  // Must do & first
-  result = result.replace(/</g, '\u003C')
-  result = result.replace(/>/g, '\u003E')
-  result = result.replace(/"/g, '\u0022')
-  return result
-}
-
-/**
  * Convert status from app to Orchard Core format
  */
 function convertStatusToOrchardFormat(status: any): CaseTypeStatus {
@@ -173,9 +161,9 @@ function convertStatusToOrchardFormat(status: any): CaseTypeStatus {
  * Generate Orchard Core recipe
  */
 export function generateCaseTypeRecipe(
-  projectName: string,
-  author: string,
-  version: string = "1.0.0"
+  _projectName: string,
+  _author: string,
+  _version: string = "1.0.0"
 ): OrchardCoreRecipe {
   const caseTypeStore = useCaseTypeStore()
   const statusStore = useStatusStore()
@@ -201,13 +189,13 @@ export function generateCaseTypeRecipe(
     const caseTypeStatuses = workflowStatuses.map(convertStatusToOrchardFormat)
 
     const caseSubTypes = caseType.subtypes?.length
-      ? `[js: [${caseType.subtypes
+      ? caseType.subtypes
           .map(id => {
             const sub = subtypes.find(s => s.id === id)
             return sub ? `contentitem('CaseSubType','${sub.name}')` : null
           })
           .filter(Boolean)
-          .join(',')}]]`
+          .join(',')
       : null
 
     return {
@@ -338,7 +326,365 @@ export function generateCaseTypeRecipe(
 }
 
 /**
- * Export case types to JSON file
+ * Generate case subtypes recipe for Step 1
+ */
+export async function generateCaseSubtypeRecipe(
+  _projectName: string,
+  _author: string,
+  _version: string = "1.0.0"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const caseSubTypeStore = useCaseSubTypeStore()
+    const projectStore = useProjectStore()
+    const subtypes = caseSubTypeStore.list.value
+
+    if (!subtypes || subtypes.length === 0) {
+      return {
+        success: false,
+        error: 'No case subtypes to export'
+      }
+    }
+
+    if (!projectStore.current?.path) {
+      return {
+        success: false,
+        error: 'No project selected. Please select a project first.'
+      }
+    }
+
+    const fullPath = `${projectStore.current.path}/Import Files/CaseSubTypes.json`
+
+    const subtypeDataItems = subtypes.map(subtype => ({
+      ContentItemId: "[js: uuid()]",
+      ContentItemVersionId: "[js: uuid()]",
+      ContentType: "CaseSubType",
+      DisplayText: subtype.name,
+      Latest: true,
+      Published: true,
+      ModifiedUtc: "[js: new Date()]",
+      PublishedUtc: "[js: new Date()]",
+      CreatedUtc: "[js: new Date()]",
+      Owner: "[js: parameters('AdminUserId')]",
+      Author: "[js: parameters('AdminUsername')]",
+      CaseSubType: {
+        Title: { Text: subtype.name },
+        CaseNumberDetailToAppend: { Text: null },
+        TaskRecipe: { Text: null },
+        InspectionTypeList: { Text: null },
+        IsRequireInspectionsTakePlaceInAboveOrder: { Value: false },
+        IsInspectionAllowed: { ContentItemIds: null },
+        DepartmentsForScheduling: { ContentItemIds: null },
+        InspectionType: { Value: false },
+        CaseTypeStatuses: { Text: null },
+        IsIncrementRecipeReviewRound: { Value: false }
+      },
+      TitlePart: {
+        Title: subtype.name 
+      }
+    }))
+
+    const recipe = {
+      name: `case-subtypes`,
+      displayName: `Case Subtypes`,
+      description: `Case subtypes`,
+      author: "Case Export Wizard",
+      website: "",
+      version: "1.0.0",
+      issetuprecipe: false,
+      categories: ["case"],
+      tags: ["case", "subtypes"],
+      steps: [
+        {
+          name: "content",
+          data: subtypeDataItems
+        }
+      ]
+    }
+
+    let jsonString = JSON.stringify(recipe, null, 2)
+
+    await invoke('generate_import_file_raw', {
+      json: jsonString,
+      path: fullPath
+    })
+
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || 'Unknown error during subtype export'
+    }
+  }
+}
+
+/**
+ * Query case subtype IDs from Orchard Core API for Step 3
+ */
+export async function queryCaseSubtypeIdsFromAPI(): Promise<{ 
+  success: boolean; 
+  error?: string; 
+  data?: Array<{ name: string; id: string }> 
+}> {
+  try {
+    const projectStore = useProjectStore()
+    const caseSubTypeStore = useCaseSubTypeStore()
+    const subtypes = caseSubTypeStore.list.value
+
+    if (!subtypes || subtypes.length === 0) {
+      return {
+        success: false,
+        error: 'No case subtypes found to query'
+      }
+    }
+
+    if (!projectStore.stagingUrl) {
+      return {
+        success: false,
+        error: 'No staging URL configured. Please add a staging URL to your project settings.'
+      }
+    }
+
+    // Remove trailing slash to avoid double slashes
+    const baseUrl = projectStore.stagingUrl?.replace(/\/$/, '') || ''
+    const apiUrl = `${baseUrl}/api/queries/GetAllCaseSubTypeIds`
+
+    // Use Tauri backend to bypass CORS entirely
+    const responseText = await invoke('fetch_api', { url: apiUrl })
+    
+    if (!responseText) {
+      throw new Error('No response from server')
+    }
+
+    let data
+    try {
+      data = JSON.parse(responseText as string)
+      console.log('Successfully parsed JSON:', data)
+    } catch (parseError) {
+      console.log('JSON parse error:', parseError)
+      console.log('Response text:', responseText)
+      console.log('Response type:', typeof responseText)
+      throw new Error(`Invalid JSON response from API. Expected array but got: ${typeof responseText}`)
+    }
+    
+    // Extract data if response has different structure
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (data.data && Array.isArray(data.data)) {
+        data = data.data
+        console.log('Extracted data from response.data property:', data)
+      } else if (data.items && Array.isArray(data.items)) {
+        data = data.items
+        console.log('Extracted data from response.items property:', data)
+      }
+    }
+    
+    // Validate the response structure
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid response format from API')
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || 'Failed to query subtype IDs'
+    }
+  }
+}
+
+/**
+ * Generate case types recipe with subtype IDs for Step 4
+ */
+export async function generateCaseTypeRecipeWithIds(
+  _projectName: string,
+  _author: string,
+  subtypeIds: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const caseTypeStore = useCaseTypeStore()
+    const statusStore = useStatusStore()
+    const workflowStore = useWorkflowStore()
+    const caseSubTypeStore = useCaseSubTypeStore()
+    const projectStore = useProjectStore()
+
+    const caseTypes = caseTypeStore.list.value
+    const statuses = statusStore.list.value
+    const subtypes = caseSubTypeStore.list.value
+
+    if (!caseTypes || caseTypes.length === 0) {
+      return {
+        success: false,
+        error: 'No case types to export'
+      }
+    }
+
+    if (!projectStore.current?.path) {
+      return {
+        success: false,
+        error: 'No project selected. Please select a project first.'
+      }
+    }
+
+    const fullPath = `${projectStore.current.path}/Import Files/CaseTypes.json`
+
+    const dataItems = caseTypes.map(caseType => {
+      const workflow = caseType.workflowId ? workflowStore.get(caseType.workflowId) : null
+      let workflowStatuses: any[] = []
+
+      if (workflow?.steps) {
+        workflowStatuses = workflow.steps
+          .map(step => statuses.find((s: any) => s.id === step.statusId))
+          .filter(Boolean)
+      } else {
+        workflowStatuses = statuses
+      }
+
+      const caseTypeStatuses = workflowStatuses.map(convertStatusToOrchardFormat)
+
+      // Use the provided ContentItemIds from API, mapped by our local subtype names
+      const caseSubTypes = caseType.subtypes?.length
+        ? (() => {
+            const missingSubtypes: string[] = []
+            const mappedIds = caseType.subtypes
+              .map(id => {
+                const sub = subtypes.find(s => s.id === id)
+                if (!sub) return null
+                
+                const apiSubtype = subtypeIds.find(si => si.DisplayText === sub.name)
+                if (!apiSubtype) {
+                  missingSubtypes.push(sub.name)
+                  return null
+                }
+                
+                return apiSubtype.ContentItemId
+              })
+              .filter(Boolean) as string[]
+            
+            if (missingSubtypes.length > 0) {
+              throw new Error(
+                `The following subtypes are not found on the Orchard Core site: ${missingSubtypes.join(', ')}. ` +
+                `Please ensure all subtypes exist on the site before generating case types.`
+              )
+            }
+            
+            return mappedIds.join(',')
+          })()
+        : null
+
+      return {
+        ContentItemId: "[js: uuid()]",
+        ContentItemVersionId: "[js: uuid()]",
+        ContentType: "CaseType",
+        DisplayText: caseType.title,
+        Latest: true,
+        Published: true,
+        ModifiedUtc: "[js: new Date()]",
+        PublishedUtc: "[js: new Date()]",
+        CreatedUtc: "[js: new Date()]",
+        Owner: "[js: parameters('AdminUserId')]",
+        Author: "[js: parameters('AdminUsername')]",
+        CaseType: {
+          Title: { Text: caseType.title },
+          MapPin: { Paths: [""], MediaTexts: [""] },
+          UseGlobalCaseAutoNumberSettings: { Value: false },
+          AllowFrontEndSearch: { Value: false },
+          LockCaseNumber: { Value: false },
+          DownloadAdminCommentswithCaseDownload: { Value: false },
+          AutoNumberStart: { Text: null },
+          DepartmentsforScheduling: { ContentItemIds: null },
+          UseAutoNumber: { Value: caseType.autoNumber || true },
+          Prefix: { Text: caseType.prefix || null },
+          Suffix: { Text: caseType.suffix || null },
+          NumberOfDigits: { Text: "4" },
+          InspectionType: { Value: true },
+          ReadyForBillingStatus: { Text: null },
+          DonotallowApprovedUntilBillingStatusSet: { Value: false },
+          SetPermitIssueDateonApprovalStatus: { Value: false },
+          ApprovedStatus: { ContentItemIds: null },
+          PermitExpirationDateXDaysFromPermitIssueDate: { Text: null },
+          WhotoEmailApprovedEmail: { Text: "None" },
+          StatusToSendPermitExpirationReminder: { ContentItemIds: null },
+          ApprovalEmailSubject: { Text: null },
+          ReminderDaysFromPermitExpiration: { Text: null },
+          ApprovalEmailForApplicant: { Html: null },
+          ApprovalEmailForAssignedTeamMember: { Html: null },
+          ApprovedPermitType: { ContentItemIds: null },
+          DeclinedStatus: { ContentItemIds: null },
+          WhotoEmailDeclinedEmail: { Text: "None" },
+          DeclinedEmailSubject: { Text: null },
+          DeclinedEmailForApplicant: { Html: null },
+          DeclinedEmailForAssignedTeamMember: { Html: null },
+
+          CaseTypeStatuses: {
+            Text: (function () {
+              let json = JSON.stringify(caseTypeStatuses)
+              let result = ''
+              for (let i = 0; i < json.length; i++) {
+                let char = json[i]
+                switch (char) {
+                  case '"': result += '\\' + 'u0022'; break
+                  case '<': result += '\\' + 'u003C'; break
+                  case '>': result += '\\' + 'u003E'; break
+                  case '&': result += '\\' + 'u0026'; break
+                  default: result += char
+                }
+              }
+              return result
+            })()
+          },
+
+          IsCaseTypeStatusesOrderedList: { Value: true },
+          IsDefaultShowFE: { Value: true },
+          CaseSubTypes: { Text: caseSubTypes },
+        },
+
+        TitlePart: {
+          Title: caseType.title
+        }
+      }
+    })
+
+    const recipe = {
+      name: `case-types`,
+      displayName: `Case Types`,
+      description: `Case types`,
+      author: "Case Export Wizard",
+      website: "",
+      version: "1.0.0",
+      issetuprecipe: false,
+      categories: ["case"],
+      tags: ["case", "types"],
+      steps: [
+        {
+          name: "content",
+          data: dataItems
+        }
+      ]
+    }
+
+    let jsonString = JSON.stringify(recipe, null, 2)
+
+    // Fix Unicode sequences in CaseTypeStatuses and email fields
+    jsonString = jsonString.replace(/\\\\u0022/g, '\\u0022')
+      .replace(/\\\\u003C/g, '\\u003C')
+      .replace(/\\\\u003E/g, '\\u003E')
+      .replace(/\\\\u0026/g, '\\u0026')
+
+    await invoke('generate_import_file_raw', {
+      json: jsonString,
+      path: fullPath
+    })
+
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || 'Unknown error during case type export'
+    }
+  }
+}
+
+/**
+ * Export case types to JSON file (legacy function)
  */
 export async function exportCaseTypesToFile(
   projectName: string,
@@ -370,7 +716,7 @@ export async function exportCaseTypesToFile(
     // First stringify normally
     let jsonString = JSON.stringify(recipe, null, 2)
 
-    // Then manually fix the Unicode sequences in CaseTypeStatuses and email fields
+    // Then manually fix Unicode sequences in CaseTypeStatuses and email fields
     jsonString = jsonString.replace(/\\\\u0022/g, '\\u0022')
       .replace(/\\\\u003C/g, '\\u003C')
       .replace(/\\\\u003E/g, '\\u003E')

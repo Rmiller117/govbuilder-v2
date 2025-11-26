@@ -123,7 +123,7 @@ function buildGovBuiltImportString(list: any[]): string {
  * Export accounting details to Import Files folder in project directory
  */
 export async function exportAccountingDetailsToFile(
-  projectName: string = "GovBuilder Project"
+  _projectName: string = "GovBuilder Project"
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const accountingStore = useAccountingStore()

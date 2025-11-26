@@ -91,6 +91,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useInspectionWorkflowStore, type InspectionWorkflow } from '@/stores/inspectionWorkflowStore'
+import { v4 as uuidv4 } from 'uuid'
 import ToggleRow from '@/components/ToggleRow.vue'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
@@ -200,7 +201,7 @@ async function handleSave() {
   console.log('localConfigs:', localConfigs.value) // Add this line for debugging
 
   const payload: InspectionWorkflow = {
-    id: isNew.value ? undefined : id.value,
+    id: isNew.value ? uuidv4() : (id.value || uuidv4()),
     name: form.value.name.trim(),
     ...Object.fromEntries(
       Object.entries(localConfigs.value)

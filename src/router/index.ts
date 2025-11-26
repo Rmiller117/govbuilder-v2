@@ -11,6 +11,7 @@ import InspectionWorkflowDetail from "@/pages/InspectionWorkflowDetail.vue";
 import LicenseStatuses from "@/pages/LicenseStatuses.vue";
 import LicenseStatusDetail from "@/pages/LicenseStatusDetail.vue";
 import LicenseWorkflows from "@/pages/LicenseWorkflows.vue";
+import CaseExport from "@/pages/CaseExport.vue";
 
 const routes = [
   { path: "/", name: "Home", component: Home },
@@ -28,6 +29,7 @@ const routes = [
   { path: "/license-statuses/new", name: "LicenseStatusNew", component: LicenseStatusDetail },
   { path: "/license-statuses/:id", name: "LicenseStatusDetail", component: LicenseStatusDetail },
   { path: "/license-workflows", name: "LicenseWorkflows", component: LicenseWorkflows },
+  { path: "/case-export", name: "CaseExport", component: CaseExport },
 
 ];
 

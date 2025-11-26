@@ -4,7 +4,7 @@
     <header class="bg-surface border-b border-base shadow-sm sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <div>
-          <button @click="router.back()" class="flex items-center gap-2 text-[rgb(var(--text-muted))] hover:text-primary mb-2">
+          <button @click="router.push('/dashboard')" class="flex items-center gap-2 text-[rgb(var(--text-muted))] hover:text-primary mb-2">
             Back to Dashboard
           </button>
           <h1 class="text-4xl font-bold">Case Workflows</h1>
@@ -46,14 +46,14 @@
 
                 <!-- Export Case Types -->
                 <MenuItem v-slot="{ active }">
-                  <button
-                    @click="exportCaseTypes"
+                  <router-link
+                    to="/case-export"
                     class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition"
                     :class="active ? 'bg-surface' : ''"
                   >
                     <ArrowDownTrayIcon class="w-5 h-5 text-blue-600" />
                     Export Case Types
-                  </button>
+                  </router-link>
                 </MenuItem>
               </MenuItems>
             </Transition>
@@ -414,8 +414,8 @@ import { useStatusStore } from '@/stores/statusStore'
 import { useCaseSubTypeStore } from '@/stores/caseSubTypeStore'
 import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
 import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
-import { exportCaseTypesToFile } from '@/utils/caseExportUtils'
-import { useProjectStore } from '@/stores/projectStore'
+
+
 
 import {
   PlusIcon,
@@ -432,7 +432,7 @@ const statusStore = useStatusStore()
 const subtypeStore = useCaseSubTypeStore()
 const caseTypeStore = useCaseTypeStore()
 const workflowStore = useWorkflowStore()
-const projectStore = useProjectStore()
+// const projectStore = useProjectStore()
 
 const statuses = computed(() => statusStore.list.value || [])
 const subtypes = computed(() => subtypeStore.list.value || [])
@@ -582,26 +582,7 @@ const removeSubtype = async (id: string) => {
   showToastMessage('Subtype Deleted', 'info')
 }
 
-const exportCaseTypes = async () => {
-  try {
-    console.log('Starting export...')
-    const projectName = projectStore.current?.data.name || 'GovBuilder Project'
-    console.log('Project name:', projectName)
-    
-    const result = await exportCaseTypesToFile(projectName)
-    console.log('Export result:', result)
-    
-    if (result.success) {
-      showToastMessage('Case types export file generated successfully in Import Files folder!', 'success')
-    } else {
-      console.error('Export error:', result.error)
-      showToastMessage(result.error || 'Export failed', 'error')
-    }
-  } catch (error) {
-    console.error('Export exception:', error)
-    showToastMessage('Export failed: ' + (error as Error).message, 'error')
-  }
-}
+
 
 </script>
 

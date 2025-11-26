@@ -54,7 +54,7 @@ export function useLicenseSubTypeStore() {
   }
 
   async function remove(id: string) {
-    licenseSubTypes.value = licenseSubTypes.value.filter(s => s.id !== id)
+    licenseSubTypes.value = licenseSubTypes.value.filter((s: any) => s.id !== id)
     await projectStore.saveCurrent()
   }
 

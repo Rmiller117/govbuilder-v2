@@ -24,12 +24,14 @@ interface ProjectSummary {
 interface CurrentProject {
   path: string
   data: Record<string, any>
+  stagingUrl?: string
 }
 
 export const useProjectStore = defineStore('project', () => {
   const projects = ref<ProjectSummary[]>([])
   const current = ref<CurrentProject | null>(null)
   const projectsRoot = ref<string | null>(null)
+  const stagingUrl = ref<string | null>(null)
 
   async function loadSettings() {
     const appDir = await appLocalDataDir()
@@ -40,6 +42,7 @@ export const useProjectStore = defineStore('project', () => {
       projectsRoot.value = settings.projectsRoot || null
     }
   }
+
 
   async function saveSettings() {
     const appDir = await appLocalDataDir()
@@ -153,7 +156,8 @@ async function loadProject(path: string) {
 
   console.log('Loading project:', data) // Add this line for debugging
 
-  current.value = { path, data }
+  current.value = { path, data, stagingUrl: data.stagingUrl || null }
+  stagingUrl.value = data.stagingUrl || null
 }
 
 async function saveCurrent() {
@@ -162,18 +166,32 @@ async function saveCurrent() {
   console.log('Data to be saved:', current.value.data) // Add this line for debugging
 
   const dataFile = await resolve(current.value.path, 'govbuilder.json')
-  await writeTextFile(dataFile, JSON.stringify(current.value.data, null, 2))
+  const updatedData = {
+    ...current.value.data,
+    stagingUrl: stagingUrl.value
+  }
+  await writeTextFile(dataFile, JSON.stringify(updatedData, null, 2))
+  if (current.value) {
+    current.value.stagingUrl = stagingUrl.value || undefined
+  }
+}
+
+async function updateStagingUrl(url: string) {
+  stagingUrl.value = url
+  await saveCurrent()
 }
 
   return {
     projects,
     current,
     projectsRoot,
+    stagingUrl,
     scanProjects,
     createProject,
     loadProject,
     saveCurrent,
     setProjectsRoot,
     chooseProjectsRoot,
+    updateStagingUrl,
   }
 })

@@ -51,7 +51,7 @@ export function useLicenseTypeStore() {
   /*  CRUD – all auto‑save to govbuilder.json                           */
   /* ------------------------------------------------------------------ */
   async function save(item: LicenseType) {
-    const existing = licenseTypes.value.findIndex(t => t.id === item.id)
+    const existing = licenseTypes.value.findIndex((t: any) => t.id === item.id)
     const cleaned = {
       ...item,
       id: item.id || uuidv4(),
@@ -69,7 +69,7 @@ export function useLicenseTypeStore() {
   }
 
   async function remove(id: string) {
-    licenseTypes.value = licenseTypes.value.filter(t => t.id !== id)
+    licenseTypes.value = licenseTypes.value.filter((t: any) => t.id !== id)
     await projectStore.saveCurrent()
   }
 

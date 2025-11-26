@@ -25,7 +25,7 @@
             leave-to="opacity-0 translate-y-4 sm:scale-95"
           >
             <DialogPanel
-              class="w-full max-w-3xl rounded-3xl bg-elevated p-8 shadow-lg border border-base"
+              class="w-full max-w-3xl rounded-3xl bg-surface p-8 shadow-lg border border-base"
             >
               <!-- Title -->
               <h3 class="text-2xl font-bold mb-6 text-[rgb(var(--text))]">
@@ -43,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue'
+
 defineProps<{ open: boolean }>()
 defineEmits(['close'])
 </script>

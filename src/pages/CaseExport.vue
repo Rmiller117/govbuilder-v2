@@ -68,6 +68,7 @@
             :alert="{
               type: 'info',
               title: 'File Generation',
+              content: 'This step will create a JSON file in your Import Files directory.',
               link: {
                 text: 'Open Import Files directory',
                 onClick: () => openProjectDirectory()
@@ -128,6 +129,7 @@
             :alert="{
               type: 'info',
               title: 'File Generation',
+              content: 'This step will create a JSON file in your Import Files directory.',
               link: {
                 text: 'Open Import Files directory',
                 onClick: () => openProjectDirectory()
@@ -354,6 +356,7 @@ AND Latest = 1</pre>
             :alert="{
               type: 'info',
               title: 'Final File Generation',
+              content: 'This step will create the final CaseTypes.json file with proper ID references.',
               link: {
                 text: 'Open Import Files directory',
                 onClick: () => openProjectDirectory()
@@ -551,19 +554,7 @@ const importFilesPathStatuses = computed(() => {
   return `${projectPath}\\Import Files`
 })
 
-// Alert content computed properties
-const step1AlertContent = computed(() => {
-  const projectPath = projectStore.current?.path || 'your project'
-  const baseUrl = projectStore.current?.stagingUrl?.replace(/\/$/, '') || 'your staging site'
-  const importFilesPath = `${projectPath}\\Import Files`
-  return `This step will create a <code class="bg-[rgb(var(--primary))]/10 text-[rgb(var(--primary))] px-1 rounded">CaseSubTypes.json</code> file in your project's Import Files directory.<br><br><strong>Import Page:</strong> <button type="button" class="text-[rgb(var(--primary))] hover:underline cursor-pointer bg-transparent border-none p-0 text-sm" onclick="window.open('${baseUrl}/Admin/DeploymentPlan/Import/Index?', '_blank')">${baseUrl}/Admin/DeploymentPlan/Import/Index?</button><br><br><strong>File Location:</strong> <code class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] px-1 rounded text-xs">${importFilesPath}\\CaseSubTypes.json</code>`
-})
 
-const step2AlertContent = computed(() => {
-  const projectPath = projectStore.current?.path || 'your project'
-  const importFilesPath = `${projectPath}\\Import Files`
-  return `This step will create a <code class="bg-[rgb(var(--success))]/10 text-[rgb(var(--success))] px-1 rounded">CaseStatuses.json</code> file with custom case statuses (excluding default Orchard Core statuses).<br><br><strong>Directory:</strong> <code class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] px-1 rounded text-xs">${importFilesPath}</code>`
-})
 
 const step3AlertContent = computed(() => {
   return `Create a custom SQL query in Orchard Core to retrieve all case subtype IDs.<br><br><strong>Query Name:</strong> GetAllCaseSubTypeIds`
@@ -588,9 +579,7 @@ const step7AlertContent = computed(() => {
   return `Querying <code class="bg-[rgb(var(--success))]/10 text-[rgb(var(--success))] px-1 rounded">${baseUrl}/api/queries/GetAllCaseStatusIds</code> to retrieve the ContentItem IDs for all case statuses.<br><br><strong>Note:</strong> This request bypasses browser CORS restrictions using the Tauri backend.`
 })
 
-const step8AlertContent = computed(() => 
-  'This step will create a <code class="bg-[rgb(var(--success))]/10 text-[rgb(var(--success))] px-1 rounded">CaseTypes.json</code> file with proper subtype and status ID references.'
-)
+
 
 const step3CheckboxLabel = computed(() => 
   'I have created the "GetAllCaseSubTypeIds" SQL query in Orchard Core'
@@ -608,9 +597,7 @@ const step1CheckboxLabel = computed(() =>
   'I have imported the "CaseStatuses.json" file into Orchard Core'
 )
 
-const step1_5CheckboxLabel = computed(() => 
-  'I have imported the "CaseSubTypes.json" file into Orchard Core'
-)
+
 
 
 

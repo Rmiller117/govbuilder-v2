@@ -69,7 +69,10 @@ export interface OrchardCoreRecipe {
 /**
  * Convert status from app to Orchard Core format
  */
-function convertStatusToOrchardFormat(status: any): CaseTypeStatus {
+function convertStatusToOrchardFormat(
+  status: any, 
+  statusIds: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>
+): CaseTypeStatus {
   const statusTitle = status.title || ''
 
   const getEmailTemplates = (title: string) => {
@@ -112,8 +115,12 @@ function convertStatusToOrchardFormat(status: any): CaseTypeStatus {
 
   const emailTemplates = getEmailTemplates(statusTitle)
 
+  // Find matching status ID from API response
+  const apiStatus = statusIds.find(si => si.DisplayText === statusTitle)
+  const contentItemId = apiStatus?.ContentItemId || `[js: contentitem('CaseStatus', '${statusTitle}')]`
+
   return {
-    ContentItemId: `[js: contentitem('CaseStatus', '${statusTitle}')]`,
+    ContentItemId: contentItemId,
     DisplayText: statusTitle,
     PermitTypeId: null,
     FormLetterId: null,
@@ -186,7 +193,7 @@ export function generateCaseTypeRecipe(
       workflowStatuses = statuses
     }
 
-    const caseTypeStatuses = workflowStatuses.map(convertStatusToOrchardFormat)
+    const caseTypeStatuses = workflowStatuses.map((status: any) => convertStatusToOrchardFormat(status, []))
 
     const caseSubTypes = caseType.subtypes?.length
       ? caseType.subtypes
@@ -326,6 +333,188 @@ export function generateCaseTypeRecipe(
 }
 
 /**
+ * Default Orchard Core statuses that should be skipped during generation
+ */
+const DEFAULT_CASE_STATUSES = [
+  "received Notarization",
+  "Waiting on Notary", 
+  "Suspended",
+  "Completed",
+  "Submitted",
+  "On Hold",
+  "In Progress",
+  "Denied",
+  "Approved"
+]
+
+/**
+ * Generate case statuses recipe for Step 2
+ */
+export async function generateCaseStatusRecipe(
+  _projectName: string,
+  _author: string,
+  version: string = "1.0.0"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const statusStore = useStatusStore()
+    const projectStore = useProjectStore()
+    const statuses = statusStore.list.value
+
+    if (!statuses || statuses.length === 0) {
+      return {
+        success: false,
+        error: 'No case statuses to export'
+      }
+    }
+
+    if (!projectStore.current?.path) {
+      return {
+        success: false,
+        error: 'No project selected. Please select a project first.'
+      }
+    }
+
+    const fullPath = `${projectStore.current.path}/Import Files/CaseStatuses.json`
+
+    // Filter out default statuses
+    const customStatuses = statuses.filter((status: any) => !DEFAULT_CASE_STATUSES.includes(status.title))
+    
+    if (customStatuses.length === 0) {
+      return {
+        success: false,
+        error: 'No custom case statuses to export. All statuses match default Orchard Core statuses.'
+      }
+    }
+
+    const statusDataItems = customStatuses.map((status: any) => ({
+      ContentItemId: "[js: uuid()]",
+      ContentItemVersionId: "[js: uuid()]",
+      ContentType: "CaseStatus",
+      DisplayText: status.title,
+      Latest: true,
+      Published: true,
+      ModifiedUtc: "[js: new Date()]",
+      PublishedUtc: "[js: new Date()]",
+      CreatedUtc: "[js: new Date()]",
+      Owner: "[js: parameters('AdminUserId')]",
+      Author: "[js: parameters('AdminUsername')]",
+      CaseStatus: {
+        Color: { Text: status.color || "#0078d4" } // Default blue color if not specified
+      },
+      TitlePart: {
+        Title: status.title 
+      }
+    }))
+
+    const recipe = {
+      name: `case-statuses`,
+      displayName: `Case Statuses`,
+      description: `Custom case statuses (excluding default Orchard Core statuses)`,
+      author: "Case Export Wizard",
+      website: "",
+      version: version,
+      issetuprecipe: false,
+      categories: ["case"],
+      tags: ["case", "statuses"],
+      steps: [
+        {
+          name: "content",
+          data: statusDataItems
+        }
+      ]
+    }
+
+    let jsonString = JSON.stringify(recipe, null, 2)
+
+    await invoke('generate_import_file_raw', {
+      json: jsonString,
+      path: fullPath
+    })
+
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || 'Unknown error during status export'
+    }
+  }
+}
+
+/**
+ * Query case status IDs from Orchard Core API for Step 7
+ */
+export async function queryCaseStatusIdsFromAPI(): Promise<{ 
+  success: boolean; 
+  error?: string; 
+  data?: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }> 
+}> {
+  try {
+    const projectStore = useProjectStore()
+    const statusStore = useStatusStore()
+    const statuses = statusStore.list.value
+
+    if (!statuses || statuses.length === 0) {
+      return {
+        success: false,
+        error: 'No case statuses found to query'
+      }
+    }
+
+    if (!projectStore.stagingUrl) {
+      return {
+        success: false,
+        error: 'No staging URL configured. Please add a staging URL to your project settings.'
+      }
+    }
+
+    // Remove trailing slash to avoid double slashes
+    const baseUrl = projectStore.stagingUrl?.replace(/\/$/, '') || ''
+    const apiUrl = `${baseUrl}/api/queries/GetAllCaseStatusIds`
+
+    // Use Tauri backend to bypass CORS entirely
+    const responseText = await invoke('fetch_api', { url: apiUrl })
+    
+    if (!responseText) {
+      throw new Error('No response from server')
+    }
+
+    let data
+    try {
+      data = JSON.parse(responseText as string)
+      console.log('Successfully parsed JSON:', data)
+    } catch (parseError) {
+      console.log('JSON parse error:', parseError)
+      console.log('Response text:', responseText)
+      console.log('Response type:', typeof responseText)
+      throw new Error(`Invalid JSON response from API. Expected array but got: ${typeof responseText}`)
+    }
+    
+    // Extract data if response has different structure
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (data.data && Array.isArray(data.data)) {
+        data = data.data
+        console.log('Extracted data from response.data property:', data)
+      } else if (data.items && Array.isArray(data.items)) {
+        data = data.items
+        console.log('Extracted data from response.items property:', data)
+      }
+    }
+    
+    // Validate the response structure
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid response format from API')
+    }
+
+    return { success: true, data }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message || 'Failed to query status IDs'
+    }
+  }
+}
+
+/**
  * Generate case subtypes recipe for Step 1
  */
 export async function generateCaseSubtypeRecipe(
@@ -423,7 +612,7 @@ export async function generateCaseSubtypeRecipe(
 export async function queryCaseSubtypeIdsFromAPI(): Promise<{ 
   success: boolean; 
   error?: string; 
-  data?: Array<{ name: string; id: string }> 
+  data?: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }> 
 }> {
   try {
     const projectStore = useProjectStore()
@@ -497,7 +686,8 @@ export async function queryCaseSubtypeIdsFromAPI(): Promise<{
 export async function generateCaseTypeRecipeWithIds(
   _projectName: string,
   _author: string,
-  subtypeIds: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>
+  subtypeIds: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>,
+  statusIds: Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const caseTypeStore = useCaseTypeStore()
@@ -538,7 +728,10 @@ export async function generateCaseTypeRecipeWithIds(
         workflowStatuses = statuses
       }
 
-      const caseTypeStatuses = workflowStatuses.map(convertStatusToOrchardFormat)
+      const caseTypeStatuses: CaseTypeStatus[] = []
+      for (const status of workflowStatuses) {
+        caseTypeStatuses.push(convertStatusToOrchardFormat(status, statusIds))
+      }
 
       // Use the provided ContentItemIds from API, mapped by our local subtype names
       const caseSubTypes = caseType.subtypes?.length
@@ -569,6 +762,25 @@ export async function generateCaseTypeRecipeWithIds(
             return mappedIds.join(',')
           })()
         : null
+
+      // Validate that all custom statuses exist on the site (skip default statuses)
+      const customStatuses = statuses.filter((status: any) => !DEFAULT_CASE_STATUSES.includes(status.title))
+      const missingStatuses: string[] = []
+      
+      customStatuses.forEach((status: any) => {
+        const apiStatus = statusIds.find(si => si.DisplayText === status.title)
+        if (!apiStatus) {
+          missingStatuses.push(status.title)
+        }
+      })
+
+      if (missingStatuses.length > 0) {
+        throw new Error(
+          `The following custom statuses are not found on the Orchard Core site: ${missingStatuses.join(', ')}. ` +
+          `Please ensure all custom statuses exist on the site before generating case types. ` +
+          `Note: Default Orchard Core statuses (${DEFAULT_CASE_STATUSES.join(', ')}) are skipped.`
+        )
+      }
 
       return {
         ContentItemId: "[js: uuid()]",

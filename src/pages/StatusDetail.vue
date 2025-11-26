@@ -79,7 +79,9 @@
             :label="row.label"
             v-model="form[row.key]"
             :email-body="form[row.bodyKey] ?? ''"
+            :email-subject="form[row.subjectKey] ?? ''"
             @update:email-body="form[row.bodyKey] = $event || undefined"
+            @update:email-subject="form[row.subjectKey] = $event || undefined"
           />
         </div>
 
@@ -276,12 +278,19 @@ type BodyKey =
   | 'emailBodyAllContacts'
   | 'emailBodyOtherRecipient'
 
+type SubjectKey =
+  | 'emailSubjectAssignedTeamMembers'
+  | 'emailSubjectOtherTeamMembers'
+  | 'emailSubjectApplicant'
+  | 'emailSubjectAllContacts'
+  | 'emailSubjectOtherRecipient'
+
 const notificationRows = [
-  { label: 'Notify Assigned Team Members', key: 'notifyAssignedTeamMembers' as NotifyKey, bodyKey: 'emailBodyAssignedTeamMembers' as BodyKey },
-  { label: 'Notify Other Team Members',    key: 'notifyOtherTeamMembers' as NotifyKey,    bodyKey: 'emailBodyOtherTeamMembers' as BodyKey },
-  { label: 'Notify Applicant',             key: 'notifyApplicant' as NotifyKey,           bodyKey: 'emailBodyApplicant' as BodyKey },
-  { label: 'Notify All Contacts',          key: 'notifyAllContacts' as NotifyKey,         bodyKey: 'emailBodyAllContacts' as BodyKey },
-  { label: 'Notify Other Recipient',       key: 'notifyOtherRecipient' as NotifyKey,      bodyKey: 'emailBodyOtherRecipient' as BodyKey },
+  { label: 'Notify Assigned Team Members', key: 'notifyAssignedTeamMembers' as NotifyKey, bodyKey: 'emailBodyAssignedTeamMembers' as BodyKey, subjectKey: 'emailSubjectAssignedTeamMembers' as SubjectKey },
+  { label: 'Notify Other Team Members',    key: 'notifyOtherTeamMembers' as NotifyKey,    bodyKey: 'emailBodyOtherTeamMembers' as BodyKey, subjectKey: 'emailSubjectOtherTeamMembers' as SubjectKey },
+  { label: 'Notify Applicant',             key: 'notifyApplicant' as NotifyKey,           bodyKey: 'emailBodyApplicant' as BodyKey, subjectKey: 'emailSubjectApplicant' as SubjectKey },
+  { label: 'Notify All Contacts',          key: 'notifyAllContacts' as NotifyKey,         bodyKey: 'emailBodyAllContacts' as BodyKey, subjectKey: 'emailSubjectAllContacts' as SubjectKey },
+  { label: 'Notify Other Recipient',       key: 'notifyOtherRecipient' as NotifyKey,      bodyKey: 'emailBodyOtherRecipient' as BodyKey, subjectKey: 'emailSubjectOtherRecipient' as SubjectKey },
 ]
 
 interface StatusForm {
@@ -297,6 +306,11 @@ interface StatusForm {
   emailBodyApplicant?: string
   emailBodyAllContacts?: string
   emailBodyOtherRecipient?: string
+  emailSubjectAssignedTeamMembers?: string
+  emailSubjectOtherTeamMembers?: string
+  emailSubjectApplicant?: string
+  emailSubjectAllContacts?: string
+  emailSubjectOtherRecipient?: string
   [key: string]: any
 }
 
@@ -334,7 +348,10 @@ async function save() {
   }
 
   notificationRows.forEach(row => {
-    if (!payload[row.key]) delete payload[row.bodyKey]
+    if (!payload[row.key]) {
+      delete payload[row.bodyKey]
+      delete payload[row.subjectKey]
+    }
   })
 
   if (isNew.value) await statusStore.add(payload)

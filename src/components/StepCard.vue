@@ -50,10 +50,10 @@
     </div>
 
     <!-- Checkbox for manual steps -->
-    <div v-if="showCheckbox" class="space-y-4">
-      <label class="flex items-center cursor-pointer">
-        <input type="checkbox" :checked="checkboxChecked" @change="$emit('checkbox-change', ($event.target as HTMLInputElement).checked)" class="rounded border-[rgb(var(--border))] bg-[rgb(var(--surface))] text-[rgb(var(--primary))] focus:ring-[rgb(var(--primary))] w-4 h-4">
-        <span class="ml-3 text-sm text-[rgb(var(--text))]">{{ checkboxLabel }}</span>
+    <div v-if="showCheckbox" class="mt-6 p-4 bg-[rgb(var(--surface))] border border-[rgb(var(--border))] rounded-lg">
+      <label class="flex items-start cursor-pointer">
+        <input type="checkbox" :checked="checkboxChecked" @change="$emit('checkbox-change', ($event.target as HTMLInputElement).checked)" class="rounded border-[rgb(var(--border))] bg-[rgb(var(--surface))] text-[rgb(var(--primary))] focus:ring-[rgb(var(--primary))] focus:ring-2 w-4 h-4 mt-1">
+        <span class="ml-3 text-sm text-[rgb(var(--text))] leading-relaxed">{{ checkboxLabel }}</span>
       </label>
     </div>
 

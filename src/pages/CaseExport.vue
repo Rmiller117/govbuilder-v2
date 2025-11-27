@@ -47,7 +47,6 @@
                     :class="getStepTextClass(index)">{{ step.title }}</span>
                 </div>
               </div>
-              <!-- Simple progress line -->
               <div v-if="index < steps.length - 1" class="flex-1 h-0.5 mt-5 mx-2"
                 :class="index < currentStepIndex ? 'bg-[rgb(var(--primary))]' : 'bg-[rgb(var(--border))]'"></div>
             </li>
@@ -55,7 +54,7 @@
         </nav>
       </div>
 
-      <!-- Step Content with Carousel Cards -->
+      <!-- Carousel Cards -->
       <div class="relative h-[600px] overflow-hidden rounded-2xl">
         <div class="relative w-full h-full">
           <!-- Step 1 Card -->
@@ -161,7 +160,7 @@
                 <div class="flex flex-col gap-2">
                   <div>
                     <strong>Directory:</strong> 
-                    <code class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] px-1 rounded text-xs">{{ importFilesPathStatuses }}</code>
+                    <code class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] px-1 rounded text-xs">{{ importFilesPath }}</code>
                   </div>
                   <div>
                     <strong>Import Page:</strong> 
@@ -180,179 +179,59 @@
 
           <!-- Step 3 Card -->
           <StepCard
-            title="Create Subtype Query"
-            description="Create a custom SQL query in Orchard Core to retrieve all case subtype IDs."
-            :step-index="2"
-            :current-step-index="currentStepIndex"
-            status="pending"
-            :alert="{
-              type: 'info',
-              title: 'SQL Query Required',
-              content: step3AlertContent,
-              link: stagingUrl ? {
-                text: 'Open Query Builder',
-                onClick: () => openQueryBuilder()
-              } : undefined
-            }"
-            :show-checkbox="true"
-            :checkbox-label="step3CheckboxLabel"
-            :checkbox-checked="querySubtypeCreated"
-            @checkbox-change="(checked) => handleSubtypeQueryCreation(checked)"
-          >
-            <template #alertContent>
-              <div class="space-y-4">
-                <div>
-                  <strong class="text-[rgb(var(--text))]">Query Name:</strong>
-                  <div class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] p-3 rounded-lg mt-2 font-mono text-sm flex items-center justify-between">
-                    <span class="text-[rgb(var(--text))]">GetAllCaseSubTypeIds</span>
-                    <button @click="copySubtypeQueryName" class="ml-2 p-1.5 text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))]/10 rounded transition-colors">
-                      <ClipboardIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <strong class="text-[rgb(var(--text))]">SQL Query:</strong>
-                  <div class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] p-3 rounded-lg mt-2 font-mono text-sm relative">
-                    <pre class="pr-12 text-[rgb(var(--text))]">SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE ContentType = 'CaseSubType'
-AND Published = 1
-AND Latest = 1</pre>
-                    <button @click="copySubtypeSqlQuery" class="absolute top-3 right-3 p-1.5 text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))]/10 rounded transition-colors">
-                      <ClipboardIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </StepCard>
-
-          <!-- Step 4 Card -->
-          <StepCard
-            title="Create Status Query"
-            description="Create a custom SQL query in Orchard Core to retrieve all case status IDs."
-            :step-index="3"
-            :current-step-index="currentStepIndex"
-            status="pending"
-            :alert="{
-              type: 'info',
-              title: 'SQL Query Required',
-              content: step4AlertContent,
-              link: stagingUrl ? {
-                text: 'Open Query Builder',
-                onClick: () => openQueryBuilder()
-              } : undefined
-            }"
-            :show-checkbox="true"
-            :checkbox-label="step4CheckboxLabel"
-            :checkbox-checked="queryStatusCreated"
-            @checkbox-change="(checked) => handleStatusQueryCreation(checked)"
-          >
-            <template #alertContent>
-              <div class="space-y-4">
-                <div>
-                  <strong class="text-[rgb(var(--text))]">Query Name:</strong>
-                  <div class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] p-3 rounded-lg mt-2 font-mono text-sm flex items-center justify-between">
-                    <span class="text-[rgb(var(--text))]">GetAllCaseStatusIds</span>
-                    <button @click="copyStatusQueryName" class="ml-2 p-1.5 text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))]/10 rounded transition-colors">
-                      <ClipboardIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <strong class="text-[rgb(var(--text))]">SQL Query:</strong>
-                  <div class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] p-3 rounded-lg mt-2 font-mono text-sm relative">
-                    <pre class="pr-12 text-[rgb(var(--text))]">SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE ContentType = 'CaseStatus'
-AND Published = 1
-AND Latest = 1</pre>
-                    <button @click="copyStatusSqlQuery" class="absolute top-3 right-3 p-1.5 text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))]/10 rounded transition-colors">
-                      <ClipboardIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </StepCard>
-          
-          <!-- Step 5 Card -->
-          <StepCard
-            title="Configure API Access"
-            description="Configure the 'ANONYMOUS' role in Orchard Core to allow public access to both query endpoints."
-            :step-index="4"
-            :current-step-index="currentStepIndex"
-            status="pending"
-            :alert="{
-              type: 'warning',
-              title: 'Manual Step Required',
-              content: step5AlertContent,
-              link: stagingUrl ? {
-                text: 'Open ANONYMOUS Role Settings',
-                onClick: () => openAnonymousRolePage()
-              } : undefined
-            }"
-            :show-checkbox="true"
-            :checkbox-label="step5CheckboxLabel"
-            :checkbox-checked="accessConfirmed"
-            @checkbox-change="(checked) => handleAccessConfirmation(checked)"
-          />
-          
-          <!-- Step 6 Card -->
-          <StepCard
             title="Query Subtype IDs"
             description="Query Orchard Core API to fetch the IDs of the newly created case subtypes."
-            :step-index="5"
+            :step-index="2"
             :current-step-index="currentStepIndex"
-            :status="step6Status === 'querying' ? 'querying' : step6Status"
+            :status="step3Status === 'querying' ? 'querying' : step3Status"
             :alert="{
               type: 'info',
-              content: step6AlertContent
+              content: step3AlertContent
             }"
-            :success-details="step6Status === 'success' ? {
+            :success-details="step3Status === 'success' ? {
               title: 'Retrieved Subtype IDs',
               items: retrievedSubtypes.map(subtype => ({
                 label: subtype.DisplayText || subtype.name || '',
                 value: subtype.ContentItemId || subtype.id || ''
               }))
             } : undefined"
-            :error="step6Error"
+            :error="step3Error"
             action-label="Query Subtype IDs"
             :is-generating="isQuerying"
             @action="querySubtypeIds"
           />
           
-          <!-- Step 7 Card -->
+          <!-- Step 4 Card -->
           <StepCard
             title="Query Status IDs"
             description="Query Orchard Core API to fetch the IDs of the newly created case statuses."
-            :step-index="6"
+            :step-index="3"
             :current-step-index="currentStepIndex"
-            :status="step7Status === 'querying' ? 'querying' : step7Status"
+            :status="step4Status === 'querying' ? 'querying' : step4Status"
             :alert="{
               type: 'info',
-              content: step7AlertContent
+              content: step4AlertContent
             }"
-            :success-details="step7Status === 'success' ? {
+            :success-details="step4Status === 'success' ? {
               title: 'Retrieved Status IDs',
               items: retrievedStatuses.map(status => ({
                 label: status.DisplayText || status.name || '',
                 value: status.ContentItemId || status.id || ''
               }))
             } : undefined"
-            :error="step7Error"
+            :error="step4Error"
             action-label="Query Status IDs"
             :is-generating="isQueryingStatuses"
             @action="queryStatusIds"
           />
           
-          <!-- Step 8 Card -->
+          <!-- Step 5 Card -->
           <StepCard
             title="Generate Case Types"
             description="Finally, we'll generate the Orchard Core recipe for case types using the retrieved subtype and status IDs."
-            :step-index="7"
+            :step-index="4"
             :current-step-index="currentStepIndex"
-            :status="step8Status === 'generating' ? 'generating' : step8Status"
+            :status="step5Status === 'generating' ? 'generating' : step5Status"
             :alert="{
               type: 'info',
               title: 'Final File Generation',
@@ -362,7 +241,7 @@ AND Latest = 1</pre>
                 onClick: () => openProjectDirectory()
               }
             }"
-            :success-details="step8Status === 'success' ? {
+            :success-details="step5Status === 'success' ? {
               title: 'Export Completed Successfully',
               items: [
                 { 
@@ -373,9 +252,7 @@ AND Latest = 1</pre>
                 }
               ]
             } : undefined"
-            action-label="Generate Case Types"
-            :is-generating="isGeneratingCaseTypes"
-            :error="step8Error"
+            :error="step5Error"
             @action="generateCaseTypes"
           >
             <template #alertContent>
@@ -403,7 +280,7 @@ AND Latest = 1</pre>
         </div>
       </div>
 
-      <!-- Toast Notification -->
+      <!-- Alert Notification -->
       <Toast 
         v-if="showToast"
         :message="toastMessage" 
@@ -449,7 +326,6 @@ import Toast from '@/components/Toast.vue'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ClipboardIcon,
   CheckIcon
 } from '@heroicons/vue/24/outline'
 
@@ -458,36 +334,28 @@ const projectStore = useProjectStore()
 
 const stagingUrl = computed(() => projectStore.stagingUrl)
 
-// Toast state
+// Notification state
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info'>('info')
 const showToast = ref(false)
 let toastTimeout: NodeJS.Timeout | null = null
 
-// Centralized toast function
 function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 'info', duration: number = 3000) {
-  // Clear existing timeout
-  if (toastTimeout) {
-    clearTimeout(toastTimeout)
-  }
+  if (toastTimeout) clearTimeout(toastTimeout)
   
   toastMessage.value = message
   toastType.value = type
   showToast.value = true
   
-  // Auto-dismiss after specified duration
   toastTimeout = setTimeout(() => {
     showToast.value = false
   }, duration)
 }
 
-// Steps configuration
+// Steps array so we can show what step we're on
 const steps = [
   { id: 'subtypes', title: 'Generate Case Subtypes' },
   { id: 'statuses', title: 'Generate Case Statuses' },
-  { id: 'createSubtypeQuery', title: 'Create Subtype Query' },
-  { id: 'createStatusQuery', title: 'Create Status Query' },
-  { id: 'access', title: 'Allow ANONYMOUS Access' },
   { id: 'querySubtypeIds', title: 'Query Subtype IDs' },
   { id: 'queryStatusIds', title: 'Query Status IDs' },
   { id: 'caseTypes', title: 'Generate Case Types' }
@@ -513,30 +381,21 @@ const subtypesImported = ref(false)
 // Step 1: Import Statuses Confirmation  
 const statusesImportedStep1 = ref(false)
 
-// Step 3: Create Subtype Query
-const querySubtypeCreated = ref(false)
-
-// Step 4: Create Status Query
-const queryStatusCreated = ref(false)
-
-// Step 5: Access Confirmation
-const accessConfirmed = ref(false)
-
-// Step 6: Query Subtype IDs
-const step6Status = ref<'pending' | 'querying' | 'success' | 'error'>('pending')
-const step6Error = ref('')
+// Step 3: Query Subtype IDs
+const step3Status = ref<'pending' | 'querying' | 'success' | 'error'>('pending')
+const step3Error = ref('')
 const subtypeIds = ref<Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>>([])
 const isQuerying = ref(false)
 
-// Step 7: Query Status IDs
-const step7Status = ref<'pending' | 'querying' | 'success' | 'error'>('pending')
-const step7Error = ref('')
+// Step 4: Query Status IDs
+const step4Status = ref<'pending' | 'querying' | 'success' | 'error'>('pending')
+const step4Error = ref('')
 const statusIds = ref<Array<{ name?: string; id?: string; DisplayText?: string; ContentItemId?: string }>>([])
 const isQueryingStatuses = ref(false)
 
-// Step 8: Generate Case Types
-const step8Status = ref<'pending' | 'generating' | 'success' | 'error'>('pending')
-const step8Error = ref('')
+// Step 5: Generate Case Types
+const step5Status = ref<'pending' | 'generating' | 'success' | 'error'>('pending')
+const step5Error = ref('')
 const caseTypeFilePath = ref('')
 const isGeneratingCaseTypes = ref(false)
 
@@ -544,50 +403,21 @@ const retrievedSubtypes = computed(() => subtypeIds.value)
 const retrievedStatuses = computed(() => statusIds.value)
 
 // Directory paths for display
-const importFilesPath = computed(() => {
-  const projectPath = projectStore.current?.path || 'your project'
-  return `${projectPath}\\Import Files`
-})
-
-const importFilesPathStatuses = computed(() => {
-  const projectPath = projectStore.current?.path || 'your project'
-  return `${projectPath}\\Import Files`
-})
-
-
+const importFilesPath = computed(() => 
+  `${projectStore.current?.path || 'your project'}\\Import Files`
+)
 
 const step3AlertContent = computed(() => {
-  return `Create a custom SQL query in Orchard Core to retrieve all case subtype IDs.<br><br><strong>Query Name:</strong> GetAllCaseSubTypeIds`
-})
-
-const step4AlertContent = computed(() => {
-  return `Create a custom SQL query in Orchard Core to retrieve all case status IDs.<br><br><strong>Query Name:</strong> GetAllCaseStatusIds`
-})
-
-const step5AlertContent = computed(() => {
-  const baseUrl = projectStore.current?.stagingUrl?.replace(/\/$/, '') || 'your staging site'
-  return `Please follow these steps in Orchard Core:<ol class="list-decimal list-inside space-y-1"><li>Navigate to <strong>Security</strong> → <strong>Roles</strong></li><li>Find and select the <strong>ANONYMOUS</strong> role</li><li>Go to <strong>Permissions</strong> tab</li><li>Find and enable <strong>Execute API</strong> permission for both <strong>GetAllCaseSubTypeIds</strong> and <strong>GetAllCaseStatusIds</strong></li><li>Save changes</li></ol><br><p><strong>Your staging site:</strong> <code class="bg-[rgb(var(--surface))] border border-[rgb(var(--border))] px-1 rounded text-xs">${baseUrl}</code></p>`
-})
-
-const step6AlertContent = computed(() => {
   const baseUrl = projectStore.current?.stagingUrl?.replace(/\/$/, '') || 'your staging site'
   return `Querying <code class="bg-[rgb(var(--primary))]/10 text-[rgb(var(--primary))] px-1 rounded">${baseUrl}/api/queries/GetAllCaseSubTypeIds</code> to retrieve the ContentItem IDs for all case subtypes.<br><br><strong>Note:</strong> This request bypasses browser CORS restrictions using the Tauri backend.`
 })
 
-const step7AlertContent = computed(() => {
+const step4AlertContent = computed(() => {
   const baseUrl = projectStore.current?.stagingUrl?.replace(/\/$/, '') || 'your staging site'
   return `Querying <code class="bg-[rgb(var(--success))]/10 text-[rgb(var(--success))] px-1 rounded">${baseUrl}/api/queries/GetAllCaseStatusIds</code> to retrieve the ContentItem IDs for all case statuses.<br><br><strong>Note:</strong> This request bypasses browser CORS restrictions using the Tauri backend.`
 })
 
 
-
-const step3CheckboxLabel = computed(() => 
-  'I have created the "GetAllCaseSubTypeIds" SQL query in Orchard Core'
-)
-
-const step4CheckboxLabel = computed(() => 
-  'I have created the "GetAllCaseStatusIds" SQL query in Orchard Core'
-)
 
 const step0CheckboxLabel = computed(() => 
   'I have imported the "CaseSubTypes.json" file into Orchard Core'
@@ -599,22 +429,11 @@ const step1CheckboxLabel = computed(() =>
 
 
 
-
-
-const step5CheckboxLabel = computed(() => 
-  'I have enabled ANONYMOUS access to both "GetAllCaseSubTypeIds" and "GetAllCaseStatusIds"'
-)
-
-
-
-// Navigation methods
 function goToStep(index: number) {
   if (index < currentStepIndex.value) {
     currentStepIndex.value = index
   }
 }
-
-
 
 // Step 2: Generate Statuses
 async function generateStatuses() {
@@ -669,39 +488,9 @@ function handleStatusesImportConfirmationStep1(checked: boolean) {
   }
 }
 
-function handleSubtypeQueryCreation(checked: boolean) {
-  querySubtypeCreated.value = checked
-  if (checked) {
-    // Auto-advance to step 4 after a short delay
-    setTimeout(() => {
-      nextStep()
-    }, 500)
-  }
-}
 
-function handleStatusQueryCreation(checked: boolean) {
-  queryStatusCreated.value = checked
-  if (checked) {
-    // Auto-advance to step 5 after a short delay
-    setTimeout(() => {
-      nextStep()
-    }, 500)
-  }
-}
 
-function handleAccessConfirmation(checked: boolean) {
-  accessConfirmed.value = checked
-  if (checked) {
-    // Auto-advance to step 6 after a short delay
-    setTimeout(() => {
-      nextStep()
-      // Automatically start querying when step 6 becomes active
-      setTimeout(() => {
-        querySubtypeIds()
-      }, 500)
-    }, 500)
-  }
-}
+
 
 function nextStep() {
   if (canProceed.value && currentStepIndex.value < steps.length - 1) {
@@ -734,16 +523,7 @@ async function openProjectDirectory() {
 
 
 
-async function openAnonymousRolePage() {
-  if (!stagingUrl.value) return
-  
-  try {
-    const anonymousRoleUrl = `${stagingUrl.value}/Admin/Roles/Edit/Anonymous`
-    await invoke('open_url', { url: anonymousRoleUrl })
-  } catch (error) {
-    console.error('Failed to open ANONYMOUS Role page:', error)
-  }
-}
+
 
 async function openOrchardImportPage() {
   if (!stagingUrl.value) return
@@ -756,119 +536,43 @@ async function openOrchardImportPage() {
   }
 }
 
-async function openQueryBuilder() {
-  if (!stagingUrl.value) return
-  
-  try {
-    const queryBuilderUrl = `${stagingUrl.value}/Admin/Queries/Create/Sql`
-    await invoke('open_url', { url: queryBuilderUrl })
-  } catch (error) {
-    console.error('Failed to open Query Builder:', error)
-  }
-}
+
 
 // Step completion checks
 function isStepCompleted(index: number) {
-  if (index === 0) return step1Status.value === 'success' && subtypesImported.value
-  if (index === 1) return step2Status.value === 'success' && statusesImportedStep1.value
-  if (index === 2) return querySubtypeCreated.value
-  if (index === 3) return queryStatusCreated.value
-  if (index === 4) return accessConfirmed.value
-  if (index === 5) return step6Status.value === 'success'
-  if (index === 6) return step7Status.value === 'success'
-  if (index === 7) return step8Status.value === 'success'
-  return false
+  const stepChecks = [
+    () => step1Status.value === 'success' && subtypesImported.value,
+    () => step2Status.value === 'success' && statusesImportedStep1.value,
+    () => step3Status.value === 'success',
+    () => step4Status.value === 'success',
+    () => step5Status.value === 'success'
+  ]
+  return stepChecks[index]?.() || false
 }
 
-// Copy functions
-async function copySubtypeQueryName() {
-  try {
-    await navigator.clipboard.writeText('GetAllCaseSubTypeIds')
-    showToastMessage('Query name copied to clipboard!', 'success')
-  } catch (error) {
-    console.error('Failed to copy query name:', error)
-    showToastMessage('Failed to copy query name', 'error')
-  }
-}
 
-async function copySubtypeSqlQuery() {
-  try {
-    const sqlQuery = `SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE ContentType = 'CaseSubType'
-AND Published = 1
-AND Latest = 1`
-    await navigator.clipboard.writeText(sqlQuery)
-    showToastMessage('SQL query copied to clipboard!', 'success')
-  } catch (error) {
-    console.error('Failed to copy SQL query:', error)
-    showToastMessage('Failed to copy SQL query', 'error')
-  }
-}
-
-async function copyStatusQueryName() {
-  try {
-    await navigator.clipboard.writeText('GetAllCaseStatusIds')
-    showToastMessage('Query name copied to clipboard!', 'success')
-  } catch (error) {
-    console.error('Failed to copy query name:', error)
-    showToastMessage('Failed to copy query name', 'error')
-  }
-}
-
-async function copyStatusSqlQuery() {
-  try {
-    const sqlQuery = `SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE ContentType = 'CaseStatus'
-AND Published = 1
-AND Latest = 1`
-    await navigator.clipboard.writeText(sqlQuery)
-    showToastMessage('SQL query copied to clipboard!', 'success')
-  } catch (error) {
-    console.error('Failed to copy SQL query:', error)
-    showToastMessage('Failed to copy SQL query', 'error')
-  }
-}
 
 function getStepClass(index: number) {
-  if (isStepCompleted(index)) {
-    return 'bg-[rgb(var(--primary))] border-[rgb(var(--primary))] text-white'
-  }
-  if (index === currentStepIndex.value) {
-    return 'border-[rgb(var(--primary))] text-[rgb(var(--primary))]'
-  }
+  if (isStepCompleted(index)) return 'bg-[rgb(var(--primary))] border-[rgb(var(--primary))] text-white'
+  if (index === currentStepIndex.value) return 'border-[rgb(var(--primary))] text-[rgb(var(--primary))]'
   return 'border-[rgb(var(--border))] text-[rgb(var(--text-muted))]'
 }
 
 function getStepTextClass(index: number) {
-  if (isStepCompleted(index)) {
-    return 'text-[rgb(var(--primary))]'
-  }
-  if (index === currentStepIndex.value) {
-    return 'text-[rgb(var(--primary))]'
-  }
+  if (isStepCompleted(index)) return 'text-[rgb(var(--primary))]'
+  if (index === currentStepIndex.value) return 'text-[rgb(var(--primary))]'
   return 'text-[rgb(var(--text-muted))]'
 }
 
 const canProceed = computed(() => {
-  console.log('canProceed check - currentStepIndex:', currentStepIndex.value)
-  console.log('step1Status:', step1Status.value)
-  console.log('subtypesImported:', subtypesImported.value)
-  
-  if (currentStepIndex.value === 0) {
-    const result = step1Status.value === 'success' && subtypesImported.value
-    console.log('Step 0 can proceed:', result)
-    return result // Can proceed only after generation AND import confirmation
-  }
-  if (currentStepIndex.value === 1) return step2Status.value === 'success' && statusesImportedStep1.value // Can proceed only after generation AND import confirmation
-  if (currentStepIndex.value === 2) return querySubtypeCreated.value
-  if (currentStepIndex.value === 3) return queryStatusCreated.value
-  if (currentStepIndex.value === 4) return accessConfirmed.value
-  if (currentStepIndex.value === 5) return step6Status.value === 'success'
-  if (currentStepIndex.value === 6) return step7Status.value === 'success'
-  if (currentStepIndex.value === 7) return step8Status.value === 'success'
-  return false
+  const proceedChecks = [
+    () => step1Status.value === 'success' && subtypesImported.value,
+    () => step2Status.value === 'success' && statusesImportedStep1.value,
+    () => step3Status.value === 'success',
+    () => step4Status.value === 'success',
+    () => step5Status.value === 'success'
+  ]
+  return proceedChecks[currentStepIndex.value]?.() || false
 })
 
 // Step actions
@@ -905,38 +609,31 @@ async function generateSubtypes() {
 }
 
 async function querySubtypeIds() {
-  console.log('querySubtypeIds: Starting query')
   isQuerying.value = true
-  step6Status.value = 'querying'
+  step3Status.value = 'querying'
 
   try {
-    console.log('querySubtypeIds: Calling queryCaseSubtypeIdsFromAPI')
     const result = await queryCaseSubtypeIdsFromAPI()
-    console.log('querySubtypeIds: Result:', result)
 
     if (result.success && result.data) {
-      console.log('querySubtypeIds: Success, data:', result.data)
-      step6Status.value = 'success'
+      step3Status.value = 'success'
       subtypeIds.value = result.data
       // Auto-advance to next step after successful query
       setTimeout(() => {
         nextStep()
-        // Automatically start querying status IDs when step 6 becomes active
+        // Automatically start querying status IDs when step 3 becomes active
         setTimeout(() => {
           queryStatusIds()
         }, 500)
       }, 3000) // 3 second delay to let users see the retrieved data
     } else {
-      console.log('querySubtypeIds: Error:', result.error)
-      step6Status.value = 'error'
-      step6Error.value = result.error || 'Failed to query subtype IDs'
+      step3Status.value = 'error'
+      step3Error.value = result.error || 'Failed to query subtype IDs'
     }
   } catch (error) {
-    console.log('querySubtypeIds: Exception:', error)
-    step6Status.value = 'error'
-    step6Error.value = (error as Error).message
+    step3Status.value = 'error'
+    step3Error.value = (error as Error).message
   } finally {
-    console.log('querySubtypeIds: Finished, isQuerying:', isQuerying.value)
     isQuerying.value = false
   }
 }
@@ -946,47 +643,40 @@ async function querySubtypeIds() {
 
 
 async function queryStatusIds() {
-  console.log('queryStatusIds: Starting query')
   isQueryingStatuses.value = true
-  step7Status.value = 'querying'
+  step4Status.value = 'querying'
 
   try {
-    console.log('queryStatusIds: Calling queryCaseStatusIdsFromAPI')
     const result = await queryCaseStatusIdsFromAPI()
-    console.log('queryStatusIds: Result:', result)
 
     if (result.success && result.data) {
-      console.log('queryStatusIds: Success, data:', result.data)
-      step7Status.value = 'success'
+      step4Status.value = 'success'
       statusIds.value = result.data
       // Auto-advance to next step after successful query
       setTimeout(() => {
         nextStep()
       }, 3000) // 3 second delay to let users see the retrieved data
     } else {
-      console.log('queryStatusIds: Error:', result.error)
-      step7Status.value = 'error'
-      step7Error.value = result.error || 'Failed to query status IDs'
+      step4Status.value = 'error'
+      step4Error.value = result.error || 'Failed to query status IDs'
     }
   } catch (error) {
-    console.log('queryStatusIds: Exception:', error)
-    step7Status.value = 'error'
-    step7Error.value = (error as Error).message
+    step4Status.value = 'error'
+    step4Error.value = (error as Error).message
   } finally {
-    console.log('queryStatusIds: Finished, isQueryingStatuses:', isQueryingStatuses.value)
     isQueryingStatuses.value = false
   }
 }
 
 async function generateCaseTypes() {
   if (!projectStore.current) {
-    step8Status.value = 'error'
-    step8Error.value = 'No project selected'
+    step5Status.value = 'error'
+    step5Error.value = 'No project selected'
     return
   }
 
   isGeneratingCaseTypes.value = true
-  step8Status.value = 'generating'
+  step5Status.value = 'generating'
 
   try {
     const result = await generateCaseTypeRecipeWithIds(
@@ -997,20 +687,20 @@ async function generateCaseTypes() {
     )
 
     if (result.success) {
-      step8Status.value = 'success'
+      step5Status.value = 'success'
       caseTypeFilePath.value = `${projectStore.current.path}\\Import Files\\CaseTypes.json`
       // Auto-advance to completion after successful generation
       setTimeout(() => {
         nextStep()
       }, 500)
     } else {
-      step8Status.value = 'error'
-      step8Error.value = result.error || 'Unknown error'
+      step5Status.value = 'error'
+      step5Error.value = result.error || 'Unknown error'
     }
   } catch (error) {
     const errorMessage = (error as Error).message
-    step8Status.value = 'error'
-    step8Error.value = errorMessage
+    step5Status.value = 'error'
+    step5Error.value = errorMessage
     showToastMessage(errorMessage, 'error', 5000) // Show for 5 seconds
   } finally {
     isGeneratingCaseTypes.value = false

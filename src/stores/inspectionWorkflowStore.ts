@@ -23,6 +23,7 @@ export interface NotificationConfig {
 
 export interface InspectionWorkflow {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   name: string
   AcceptedInvite?: NotificationConfig
   Approved?: NotificationConfig
@@ -39,16 +40,26 @@ export interface InspectionWorkflow {
 export function useInspectionWorkflowStore() {
   const projectStore = useProjectStore()
 
-  const workflows = computed<InspectionWorkflow[]>({
+const workflows = computed<InspectionWorkflow[]>({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
-      if (!gov.inspectionWorkflows) gov.inspectionWorkflows = []
-      if (!Array.isArray(gov.inspectionWorkflows)) gov.inspectionWorkflows = []
-      return gov.inspectionWorkflows
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      if (!gov.projectBuild.inspectionWorkflows) gov.projectBuild.inspectionWorkflows = []
+      if (!Array.isArray(gov.projectBuild.inspectionWorkflows)) gov.projectBuild.inspectionWorkflows = []
+      return gov.projectBuild.inspectionWorkflows
     },
     set: (val) => {
       if (!projectStore.current) return
-      projectStore.current.data.govData.inspectionWorkflows = val
+      const gov = projectStore.current.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.inspectionWorkflows = val
+      projectStore.current.data.govData = gov
     },
   })
 

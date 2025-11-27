@@ -14,6 +14,13 @@ import {
   writeTextFile,
 } from '@tauri-apps/plugin-fs'
 import { open } from '@tauri-apps/plugin-dialog'
+import { 
+  syncAllContentTypes, 
+  mapApiItemsToStore, 
+  mergeSyncedItems,
+  type SyncResult,
+  type SyncProgress
+} from '@/utils/apiSyncUtils'
 
 interface ProjectSummary {
   name: string
@@ -25,6 +32,7 @@ interface CurrentProject {
   path: string
   data: Record<string, any>
   stagingUrl?: string
+  apiConfigured?: boolean
 }
 
 export const useProjectStore = defineStore('project', () => {
@@ -32,6 +40,7 @@ export const useProjectStore = defineStore('project', () => {
   const current = ref<CurrentProject | null>(null)
   const projectsRoot = ref<string | null>(null)
   const stagingUrl = ref<string | null>(null)
+  const apiConfigured = ref<boolean>(false)
 
   async function loadSettings() {
     const appDir = await appLocalDataDir()
@@ -127,10 +136,19 @@ export const useProjectStore = defineStore('project', () => {
       created: new Date().toISOString(),
       govData: {
         title: projectName,
-        agencies: [],
-        regulations: {},
-        metadata: {},
-        statuses: []
+        projectBuild: {
+          statuses: [],
+          licenseStatuses: [],
+          accounting: { details: [] },
+          inspectionTypes: [],
+          inspectionWorkflows: {},
+          licenseTypes: [],
+          licenseSubTypes: [],
+          licenseWorkflows: {},
+          workflows: {},
+          caseTypes: [],
+          subtypes: []
+        }
       }
     }
 
@@ -143,7 +161,9 @@ export const useProjectStore = defineStore('project', () => {
     }
 
     projects.value.unshift(summary)
+    // set new project. For some reason they were keeping staging URLs from other projects :(
     current.value = { path: projectPath, data: template }
+    stagingUrl.value = null // Explicitly clear staging URL for new projects
   }
 
 async function loadProject(path: string) {
@@ -152,23 +172,176 @@ async function loadProject(path: string) {
     throw new Error('Not a valid GovBuilder project (missing govbuilder.json)')
   }
   const text = await readTextFile(dataFile)
-  const data = JSON.parse(text)
+  let data = JSON.parse(text)
 
-  console.log('Loading project:', data) // Add this line for debugging
+  // Migration logic: Check if project uses old structure (arrays directly under govData)
+  data = await migrateProjectStructure(data)
 
-  current.value = { path, data, stagingUrl: data.stagingUrl || null }
-  stagingUrl.value = data.stagingUrl || null
+  // Only load staging URL if it exists in the project data
+  const projectStagingUrl = data.stagingUrl || null
+  const projectApiConfigured = data.apiConfigured || false
+  current.value = { path, data, stagingUrl: projectStagingUrl, apiConfigured: projectApiConfigured }
+  stagingUrl.value = projectStagingUrl
+  apiConfigured.value = projectApiConfigured
+}
+
+async function migrateProjectStructure(data: any) {
+  const govData = data.govData || {}
+  
+  // Check if migration is needed (old structure has arrays directly under govData)
+  const hasOldStructure = 
+    Array.isArray(govData.statuses) ||
+    Array.isArray(govData.licenseStatuses) ||
+    govData.accounting ||
+    Array.isArray(govData.inspectionTypes) ||
+    govData.inspectionWorkflows ||
+    Array.isArray(govData.licenseTypes) ||
+    Array.isArray(govData.licenseSubTypes) ||
+    govData.licenseWorkflows ||
+    govData.workflows ||
+    Array.isArray(govData.caseTypes) ||
+    Array.isArray(govData.subtypes)
+
+  if (!hasOldStructure) {
+    return data // No migration needed
+  }
+
+  console.log('Migrating project structure from old format to new projectBuild format...')
+
+  // Initialize projectBuild if it doesn't exist
+  if (!govData.projectBuild) {
+    govData.projectBuild = {}
+  }
+
+  // Migrate each array/object to projectBuild
+  if (Array.isArray(govData.statuses)) {
+    govData.projectBuild.statuses = govData.statuses
+    delete govData.statuses
+  } else if (!govData.projectBuild.statuses) {
+    govData.projectBuild.statuses = []
+  }
+
+  if (Array.isArray(govData.licenseStatuses)) {
+    govData.projectBuild.licenseStatuses = govData.licenseStatuses
+    delete govData.licenseStatuses
+  } else if (!govData.projectBuild.licenseStatuses) {
+    govData.projectBuild.licenseStatuses = []
+  }
+
+  if (govData.accounting) {
+    govData.projectBuild.accounting = govData.accounting
+    delete govData.accounting
+  } else if (!govData.projectBuild.accounting) {
+    govData.projectBuild.accounting = { details: [] }
+  }
+
+  if (Array.isArray(govData.inspectionTypes)) {
+    govData.projectBuild.inspectionTypes = govData.inspectionTypes
+    delete govData.inspectionTypes
+  } else if (!govData.projectBuild.inspectionTypes) {
+    govData.projectBuild.inspectionTypes = []
+  }
+
+  if (govData.inspectionWorkflows) {
+    govData.projectBuild.inspectionWorkflows = govData.inspectionWorkflows
+    delete govData.inspectionWorkflows
+  } else if (!govData.projectBuild.inspectionWorkflows) {
+    govData.projectBuild.inspectionWorkflows = {}
+  }
+
+  if (Array.isArray(govData.licenseTypes)) {
+    govData.projectBuild.licenseTypes = govData.licenseTypes
+    delete govData.licenseTypes
+  } else if (!govData.projectBuild.licenseTypes) {
+    govData.projectBuild.licenseTypes = []
+  }
+
+  if (Array.isArray(govData.licenseSubTypes)) {
+    govData.projectBuild.licenseSubTypes = govData.licenseSubTypes
+    delete govData.licenseSubTypes
+  } else if (!govData.projectBuild.licenseSubTypes) {
+    govData.projectBuild.licenseSubTypes = []
+  }
+
+  if (govData.licenseWorkflows) {
+    govData.projectBuild.licenseWorkflows = govData.licenseWorkflows
+    delete govData.licenseWorkflows
+  } else if (!govData.projectBuild.licenseWorkflows) {
+    govData.projectBuild.licenseWorkflows = {}
+  }
+
+  if (govData.workflows) {
+    govData.projectBuild.workflows = govData.workflows
+    delete govData.workflows
+  } else if (!govData.projectBuild.workflows) {
+    govData.projectBuild.workflows = {}
+  }
+
+  if (Array.isArray(govData.caseTypes)) {
+    govData.projectBuild.caseTypes = govData.caseTypes
+    delete govData.caseTypes
+  } else if (!govData.projectBuild.caseTypes) {
+    govData.projectBuild.caseTypes = []
+  }
+
+  if (Array.isArray(govData.subtypes)) {
+    govData.projectBuild.subtypes = govData.subtypes
+    delete govData.subtypes
+  } else if (!govData.projectBuild.subtypes) {
+    govData.projectBuild.subtypes = []
+  }
+
+  // Add govbuiltContentItemId field to all existing items if they don't have it
+  const addGovbuiltContentItemId = (items: any[]) => {
+    items.forEach(item => {
+      if (item && !item.hasOwnProperty('govbuiltContentItemId')) {
+        item.govbuiltContentItemId = undefined
+      }
+    })
+  }
+
+  const addGovbuiltContentItemIdToObjects = (objects: Record<string, any>) => {
+    Object.values(objects).forEach(obj => {
+      if (obj && !obj.hasOwnProperty('govbuiltContentItemId')) {
+        obj.govbuiltContentItemId = undefined
+      }
+    })
+  }
+
+  // Add field to all arrays
+  if (govData.projectBuild.statuses) addGovbuiltContentItemId(govData.projectBuild.statuses)
+  if (govData.projectBuild.licenseStatuses) addGovbuiltContentItemId(govData.projectBuild.licenseStatuses)
+  if (govData.projectBuild.inspectionTypes) addGovbuiltContentItemId(govData.projectBuild.inspectionTypes)
+  if (govData.projectBuild.licenseTypes) addGovbuiltContentItemId(govData.projectBuild.licenseTypes)
+  if (govData.projectBuild.licenseSubTypes) addGovbuiltContentItemId(govData.projectBuild.licenseSubTypes)
+  if (govData.projectBuild.caseTypes) addGovbuiltContentItemId(govData.projectBuild.caseTypes)
+  if (govData.projectBuild.subtypes) addGovbuiltContentItemId(govData.projectBuild.subtypes)
+
+  // Add field to accounting details
+  if (govData.projectBuild.accounting && govData.projectBuild.accounting.details) {
+    addGovbuiltContentItemId(govData.projectBuild.accounting.details)
+  }
+
+  // Add field to workflow objects
+  if (govData.projectBuild.workflows) addGovbuiltContentItemIdToObjects(govData.projectBuild.workflows)
+  if (govData.projectBuild.inspectionWorkflows) addGovbuiltContentItemIdToObjects(govData.projectBuild.inspectionWorkflows)
+  if (govData.projectBuild.licenseWorkflows) addGovbuiltContentItemIdToObjects(govData.projectBuild.licenseWorkflows)
+
+  // Update the data object
+  data.govData = govData
+
+  console.log('Project structure migration completed.')
+  return data
 }
 
 async function saveCurrent() {
   if (!current.value) return
 
-  console.log('Data to be saved:', current.value.data) // Add this line for debugging
-
   const dataFile = await resolve(current.value.path, 'govbuilder.json')
   const updatedData = {
     ...current.value.data,
-    stagingUrl: stagingUrl.value
+    stagingUrl: stagingUrl.value,
+    apiConfigured: apiConfigured.value
   }
   await writeTextFile(dataFile, JSON.stringify(updatedData, null, 2))
   if (current.value) {
@@ -178,7 +351,110 @@ async function saveCurrent() {
 
 async function updateStagingUrl(url: string) {
   stagingUrl.value = url
+  if (current.value) {
+    current.value.stagingUrl = url
+  }
   await saveCurrent()
+}
+
+async function updateApiConfigured(configured: boolean) {
+  apiConfigured.value = configured
+  if (current.value) {
+    current.value.apiConfigured = configured
+  }
+  await saveCurrent()
+}
+
+async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void): Promise<SyncResult[]> {
+  if (!stagingUrl.value) {
+    throw new Error('Staging URL is not configured')
+  }
+  
+  if (!current.value) {
+    throw new Error('No project is currently loaded')
+  }
+
+  try {
+    // Sync all content types from API
+    const results = await syncAllContentTypes(stagingUrl.value, onProgress)
+    
+    console.log('Sync results:', results)
+    
+    // Process successful syncs
+    for (const result of results) {
+      if (!result.success) {
+        console.warn(`Failed to sync ${result.contentType}:`, result.error)
+        continue
+      }
+      
+      console.log(`Processing ${result.contentType} with ${result.items.length} items`)
+      
+      // Map API items to store format
+      const mappedItems = mapApiItemsToStore(result.contentType as any, result.items)
+      
+      console.log(`Mapped ${result.contentType}:`, mappedItems.length, 'items')
+      
+      // Get current project data
+      const govData = current.value.data.govData || {}
+      if (!govData.projectBuild) govData.projectBuild = {}
+      
+      // Merge with existing data based on content type
+      switch (result.contentType) {
+        case 'CaseStatus':
+          if (!Array.isArray(govData.projectBuild.statuses)) govData.projectBuild.statuses = []
+          const beforeStatuses = govData.projectBuild.statuses.length
+          govData.projectBuild.statuses = mergeSyncedItems(govData.projectBuild.statuses, mappedItems)
+          console.log(`CaseStatus: ${beforeStatuses} -> ${govData.projectBuild.statuses.length} items`)
+          break
+          
+        case 'LicenseStatus':
+          if (!Array.isArray(govData.projectBuild.licenseStatuses)) govData.projectBuild.licenseStatuses = []
+          govData.projectBuild.licenseStatuses = mergeSyncedItems(govData.projectBuild.licenseStatuses, mappedItems)
+          break
+          
+        case 'CaseType':
+          if (!Array.isArray(govData.projectBuild.caseTypes)) govData.projectBuild.caseTypes = []
+          govData.projectBuild.caseTypes = mergeSyncedItems(govData.projectBuild.caseTypes, mappedItems)
+          break
+          
+        case 'LicenseType':
+          if (!Array.isArray(govData.projectBuild.licenseTypes)) govData.projectBuild.licenseTypes = []
+          govData.projectBuild.licenseTypes = mergeSyncedItems(govData.projectBuild.licenseTypes, mappedItems)
+          break
+          
+        case 'InspectionType':
+          if (!Array.isArray(govData.projectBuild.inspectionTypes)) govData.projectBuild.inspectionTypes = []
+          govData.projectBuild.inspectionTypes = mergeSyncedItems(govData.projectBuild.inspectionTypes, mappedItems)
+          break
+          
+        case 'CaseSubType':
+          if (!Array.isArray(govData.projectBuild.subtypes)) govData.projectBuild.subtypes = []
+          govData.projectBuild.subtypes = mergeSyncedItems(govData.projectBuild.subtypes, mappedItems)
+          break
+          
+        case 'LicenseSubType':
+          if (!Array.isArray(govData.projectBuild.licenseSubTypes)) govData.projectBuild.licenseSubTypes = []
+          govData.projectBuild.licenseSubTypes = mergeSyncedItems(govData.projectBuild.licenseSubTypes, mappedItems)
+          break
+          
+        case 'AccountingDetails':
+          if (!govData.projectBuild.accounting) govData.projectBuild.accounting = { details: [] }
+          if (!Array.isArray(govData.projectBuild.accounting.details)) govData.projectBuild.accounting.details = []
+          govData.projectBuild.accounting.details = mergeSyncedItems(govData.projectBuild.accounting.details, mappedItems)
+          break
+      }
+    }
+    
+    // Save updated project data
+    await saveCurrent()
+    
+    console.log('Project data saved successfully')
+    
+    return results
+  } catch (error) {
+    console.error('API sync failed:', error)
+    throw error
+  }
 }
 
   return {
@@ -186,6 +462,7 @@ async function updateStagingUrl(url: string) {
     current,
     projectsRoot,
     stagingUrl,
+    apiConfigured,
     scanProjects,
     createProject,
     loadProject,
@@ -193,5 +470,7 @@ async function updateStagingUrl(url: string) {
     setProjectsRoot,
     chooseProjectsRoot,
     updateStagingUrl,
+    updateApiConfigured,
+    syncContentFromApi,
   }
 })

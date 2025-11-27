@@ -9,6 +9,7 @@ export interface LicenseWorkflowStep {
 
 export interface LicenseWorkflow {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   name: string
   steps: LicenseWorkflowStep[]
 }
@@ -16,11 +17,24 @@ export interface LicenseWorkflow {
 export function useLicenseWorkflowStore() {
   const projectStore = useProjectStore()
 
-  const licenseWorkflows = computed<Record<string, LicenseWorkflow>>({
-    get: () => projectStore.current?.data.govData.licenseWorkflows ?? {},
+const licenseWorkflows = computed<Record<string, LicenseWorkflow>>({
+    get: () => {
+      const gov = projectStore.current?.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      return gov.projectBuild.licenseWorkflows ?? {}
+    },
     set: (val) => {
       if (!projectStore.current) return
-      projectStore.current.data.govData.licenseWorkflows = val
+      const gov = projectStore.current.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.licenseWorkflows = val
+      projectStore.current.data.govData = gov
     }
   })
 

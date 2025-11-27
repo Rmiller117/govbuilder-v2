@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface LicenseSubType {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   name: string
 }
 
@@ -18,20 +19,28 @@ export function useLicenseSubTypeStore() {
     console.warn('licenseSubTypeStore used without a loaded project')
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  licenseSubTypes live inside govData.licenseSubTypes (create array if missing)   */
+/* ------------------------------------------------------------------ */
+  /*  licenseSubTypes live inside govData.projectBuild.licenseSubTypes (create array if missing)   */
   /* ------------------------------------------------------------------ */
   const licenseSubTypes = computed({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
       // ← CREATE ARRAY IF MISSING
-      if (!Array.isArray(gov.licenseSubTypes)) gov.licenseSubTypes = []
-      return gov.licenseSubTypes
+      if (!Array.isArray(gov.projectBuild.licenseSubTypes)) gov.projectBuild.licenseSubTypes = []
+      return gov.projectBuild.licenseSubTypes
     },
     set: (val) => {
       if (!projectStore.current) return
       const gov = projectStore.current.data.govData ?? {}
-      gov.licenseSubTypes = val
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.licenseSubTypes = val
       projectStore.current.data.govData = gov
     },
   })

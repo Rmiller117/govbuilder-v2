@@ -14,7 +14,7 @@
     <!-- Right -->
     <div class="flex items-center gap-4">
 
-      <!-- Add Detail button (keep as main CTA) -->
+      <!-- Add Detail button, I might move this to the bottom of detail list-->
       <button
         @click="openModal()"
         class="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition flex items-center gap-2"
@@ -44,7 +44,7 @@
             class="absolute right-0 mt-3 w-56 p-2 bg-elevated border border-base rounded-xl shadow-lg focus:outline-none"
           >
 
-            <!-- Generate Govbuilt Import -->
+            <!-- Generate Govbuilt Import Hopefully-->
             <MenuItem v-slot="{ active }">
               <button
                 @click="generateGovbuiltImport"
@@ -56,7 +56,7 @@
               </button>
             </MenuItem>
 
-            <!-- Import File -->
+            <!-- Import Exel or CSV File if we're lucky -->
             <MenuItem v-slot="{ active }">
               <button
                 @click="importFile"
@@ -71,15 +71,13 @@
           </MenuItems>
         </Transition>
       </Menu>
-
-      <!-- Theme toggle -->
       <ThemeToggleButton />
     </div>
   </div>
 </header>
 
     <main class="max-w-5xl mx-auto px-6 py-12">
-      <!-- Empty State -->
+      <!-- If no details have been added yet -->
       <div v-if="!list.length" class="text-center py-20">
         <div class="bg-surface border border-base w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center">
           <DocumentTextIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
@@ -88,7 +86,7 @@
         <p class="text-[rgb(var(--text-muted))]">Click "Add Detail" to create your first one.</p>
       </div>
 
-      <!-- Vertical List -->
+      <!-- Detail List -->
       <TransitionGroup name="list" tag="ul" class="space-y-4">
         <li v-for="detail in list" :key="detail.id"
           class="bg-surface rounded-2xl shadow-base border border-base overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group"
@@ -123,7 +121,7 @@
     </Transition>
 
 
-    <!-- Animated Modal -->
+    <!-- Animated Modal - Asked AI for this one because animations are hard -->
     <teleport to="body">
       <TransitionRoot :show="modalOpen" appear>
         
@@ -166,7 +164,7 @@
                       class="w-full px-5 py-3 border border-base rounded-xl bg-surface text-[rgb(var(--text))] ring-focus" />
                   </div>
 
-                  <!-- GRID FIELDS -->
+                  <!-- Other accounting detail fields -->
                   <div class="grid grid-cols-2 gap-6">
                     <div>
                       <label class="block text-sm font-medium mb-2">Tran Code</label>
@@ -234,7 +232,7 @@
     </teleport>
 
 
-    <!-- File input for import (hidden) -->
+    <!-- File input for import (needed this to actually import the file from our button) -->
     <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" class="hidden" @change="handleFileUpload" />
   </div>
 </template>
@@ -247,6 +245,8 @@ import { exportAccountingDetailsToFile } from '@/utils/accountingExportUtils'
 import Toast from '@/components/Toast.vue'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 import { importAccountingDetailsFromFile } from '@/utils/accountingImportUtils'
+
+// this is the package we're using for modals and buttons
 import {
   TransitionRoot,
   TransitionChild,
@@ -257,6 +257,8 @@ import {
   MenuItems,
   MenuItem
 } from '@headlessui/vue'
+
+// package we're using for imports
 import {
   PlusIcon,
   TrashIcon,
@@ -264,7 +266,7 @@ import {
   EllipsisVerticalIcon
 } from '@heroicons/vue/24/outline'
 
-// Toast state
+// Notification state
 const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info'>('success')
@@ -278,6 +280,7 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
   }, 3000)
 }
 
+// Typical page router stuff
 const router = useRouter()
 const { list, save, remove } = useAccountingStore()
 
@@ -319,7 +322,7 @@ async function generateGovbuiltImport() {
 }
 
 
-// Import functionality
+// Import stuff
 function importFile() {
   fileInputRef.value?.click()
 }

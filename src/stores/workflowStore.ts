@@ -9,6 +9,7 @@ export interface WorkflowStep {
 
 export interface Workflow {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   name: string
   steps: WorkflowStep[]
 }
@@ -16,11 +17,24 @@ export interface Workflow {
 export function useWorkflowStore() {
   const projectStore = useProjectStore()
 
-  const workflows = computed<Record<string, Workflow>>({
-    get: () => projectStore.current?.data.govData.workflows ?? {},
+const workflows = computed<Record<string, Workflow>>({
+    get: () => {
+      const gov = projectStore.current?.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      return gov.projectBuild.workflows ?? {}
+    },
     set: (val) => {
       if (!projectStore.current) return
-      projectStore.current.data.govData.workflows = val
+      const gov = projectStore.current.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.workflows = val
+      projectStore.current.data.govData = gov
     }
   })
 

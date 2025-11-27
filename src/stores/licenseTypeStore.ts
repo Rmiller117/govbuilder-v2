@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface LicenseType {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   title: string
   prefix?: string
   suffix?: string
@@ -24,20 +25,28 @@ export function useLicenseTypeStore() {
     console.warn('licenseTypeStore used without a loaded project')
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  licenseTypes live inside govData.licenseTypes (create array if missing)   */
+/* ------------------------------------------------------------------ */
+  /*  licenseTypes live inside govData.projectBuild.licenseTypes (create array if missing)   */
   /* ------------------------------------------------------------------ */
   const licenseTypes = computed({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
       // ← CREATE ARRAY IF MISSING
-      if (!Array.isArray(gov.licenseTypes)) gov.licenseTypes = []
-      return gov.licenseTypes
+      if (!Array.isArray(gov.projectBuild.licenseTypes)) gov.projectBuild.licenseTypes = []
+      return gov.projectBuild.licenseTypes
     },
     set: (val) => {
       if (!projectStore.current) return
       const gov = projectStore.current.data.govData ?? {}
-      gov.licenseTypes = val
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.licenseTypes = val
       projectStore.current.data.govData = gov
     },
   })
@@ -73,12 +82,13 @@ export function useLicenseTypeStore() {
     await projectStore.saveCurrent()
   }
 
-  /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
   /*  Helper: fresh license type object                                   */
   /* ------------------------------------------------------------------ */
   function createNew() {
     return {
       id: uuidv4(),
+      govbuiltContentItemId: undefined, // Orchard Core ContentItemId for API sync
       title: '',
       prefix: '',
       suffix: '',

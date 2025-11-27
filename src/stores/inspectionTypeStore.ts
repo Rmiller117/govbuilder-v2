@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface InspectionType {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   title: string
   durationHours: number        // e.g. 0.5 = 30 min
   workflowId?: string          // <-- the only email config now!
@@ -13,16 +14,26 @@ export interface InspectionType {
 export function useInspectionTypeStore() {
   const projectStore = useProjectStore()
 
-  const types = computed<InspectionType[]>({
+const types = computed<InspectionType[]>({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
-      if (!gov.inspectionTypes) gov.inspectionTypes = []
-      if (!Array.isArray(gov.inspectionTypes)) gov.inspectionTypes = []
-      return gov.inspectionTypes
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      if (!gov.projectBuild.inspectionTypes) gov.projectBuild.inspectionTypes = []
+      if (!Array.isArray(gov.projectBuild.inspectionTypes)) gov.projectBuild.inspectionTypes = []
+      return gov.projectBuild.inspectionTypes
     },
     set: (val) => {
       if (!projectStore.current) return
-      projectStore.current.data.govData.inspectionTypes = val
+      const gov = projectStore.current.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.inspectionTypes = val
+      projectStore.current.data.govData = gov
     },
   })
 

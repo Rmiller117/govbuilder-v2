@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface AccountingDetail {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   title: string         
   glKey: string          
   tranCode?: string
@@ -19,16 +20,26 @@ export interface AccountingDetail {
 export function useAccountingStore() {
   const projectStore = useProjectStore()
 
-  const details = computed<AccountingDetail[]>({
+const details = computed<AccountingDetail[]>({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
-      if (!gov.accounting) gov.accounting = { details: [] }
-      if (!Array.isArray(gov.accounting.details)) gov.accounting.details = []
-      return gov.accounting.details
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      if (!gov.projectBuild.accounting) gov.projectBuild.accounting = { details: [] }
+      if (!Array.isArray(gov.projectBuild.accounting.details)) gov.projectBuild.accounting.details = []
+      return gov.projectBuild.accounting.details
     },
     set: (val) => {
       if (!projectStore.current) return
-      projectStore.current.data.govData.accounting = { details: val }
+      const gov = projectStore.current.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.accounting = { details: val }
+      projectStore.current.data.govData = gov
     },
   })
 

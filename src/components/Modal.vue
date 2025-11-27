@@ -25,7 +25,7 @@
             leave-to="opacity-0 translate-y-4 sm:scale-95"
           >
             <DialogPanel
-              class="w-full max-w-3xl rounded-3xl bg-surface p-8 shadow-lg border border-base"
+              class="w-full max-w-7xl rounded-3xl bg-surface p-8 shadow-lg border border-base"
             >
               <!-- Title -->
               <h3 class="text-2xl font-bold mb-6 text-[rgb(var(--text))]">

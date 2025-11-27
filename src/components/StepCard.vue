@@ -1,5 +1,5 @@
 <template>
-  <div :style="cardStyle" class="absolute top-0 left-1/2 w-[80%] -translate-x-1/2 bg-surface rounded-2xl border border-base shadow-base p-8">
+  <div :style="cardStyle" class="absolute top-0 left-1/2 w-[95%] sm:w-[90%] -translate-x-1/2 bg-surface rounded-2xl border border-base shadow-base p-4 sm:p-8 max-h-[600px] overflow-y-auto">
     <h2 class="text-2xl font-bold mb-4 text-[rgb(var(--text))]">{{ title }}</h2>
     <p class="text-[rgb(var(--text-muted))] mb-6">
       {{ description }}
@@ -146,16 +146,18 @@ const cardStyle = computed(() => {
   const distance = props.stepIndex - props.currentStepIndex
   
   // Calculate transform based on distance from current step
-  const translateX = distance * 85 // 85% offset between cards
-  const scale = 1 - Math.abs(distance) * 0.15 // Scale down distant cards
-  const opacity = 1 - Math.abs(distance) * 0.3 // Fade out distant cards
+  // Use percentage-based positioning that works better on mobile
+  const translateX = distance * 100 // 100% offset between cards
+  const scale = Math.max(0.7, 1 - Math.abs(distance) * 0.2) // Scale down distant cards but not too much
+  const opacity = Math.max(0.3, 1 - Math.abs(distance) * 0.4) // Fade out distant cards but keep visible
   const zIndex = 10 - Math.abs(distance) // Layer cards properly
   
   return {
     transform: `translateX(${translateX}%) scale(${scale})`,
     opacity: opacity,
     zIndex: zIndex,
-    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+    pointerEvents: (distance === 0 ? 'auto' : 'none') as 'auto' | 'none'
   }
 })
 

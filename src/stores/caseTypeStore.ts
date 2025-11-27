@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 // In your CaseType interface
 export interface CaseType {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   title: string
   prefix?: string
   suffix?: string
@@ -22,16 +23,24 @@ export function useCaseTypeStore() {
     console.warn('caseTypeStore used without a loaded project')
   }
 
-  const caseTypes = computed<CaseType[]>({
+const caseTypes = computed<CaseType[]>({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
-      if (!Array.isArray(gov.caseTypes)) gov.caseTypes = []
-      return gov.caseTypes
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      if (!Array.isArray(gov.projectBuild.caseTypes)) gov.projectBuild.caseTypes = []
+      return gov.projectBuild.caseTypes
     },
     set: (val) => {
       if (!projectStore.current) return
       const gov = projectStore.current.data.govData ?? {}
-      gov.caseTypes = val
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.caseTypes = val
       projectStore.current.data.govData = gov
     },
   })

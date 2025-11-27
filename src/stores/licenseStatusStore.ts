@@ -13,20 +13,28 @@ export function useLicenseStatusStore() {
     console.warn('licenseStatusStore used without a loaded project')
   }
 
-  /* ------------------------------------------------------------------ */
-  /*  licenseStatuses live inside govData.licenseStatuses (create array if missing)   */
+/* ------------------------------------------------------------------ */
+  /*  licenseStatuses live inside govData.projectBuild.licenseStatuses (create array if missing)   */
   /* ------------------------------------------------------------------ */
   const licenseStatuses = computed({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
       // ← CREATE ARRAY IF MISSING
-      if (!Array.isArray(gov.licenseStatuses)) gov.licenseStatuses = []
-      return gov.licenseStatuses
+      if (!Array.isArray(gov.projectBuild.licenseStatuses)) gov.projectBuild.licenseStatuses = []
+      return gov.projectBuild.licenseStatuses
     },
     set: (val) => {
       if (!projectStore.current) return
       const gov = projectStore.current.data.govData ?? {}
-      gov.licenseStatuses = val
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.licenseStatuses = val
       projectStore.current.data.govData = gov
     },
   })
@@ -56,12 +64,13 @@ export function useLicenseStatusStore() {
     await projectStore.saveCurrent()   // ← FIX #2
   }
 
-  /* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ */
   /*  Helper: fresh licenseStatus object                                       */
   /* ------------------------------------------------------------------ */
   function createNew() {
     return {
       id: uuidv4(),
+      govbuiltContentItemId: undefined, // Orchard Core ContentItemId for API sync
       title: '',
       hideFromStatusFlowChevron: false,
       notifyAssignedTeamMembers: false,

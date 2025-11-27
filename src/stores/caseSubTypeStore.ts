@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface Subtype {
   id: string
+  govbuiltContentItemId?: string // Orchard Core ContentItemId for API sync
   name: string
 }
 
@@ -15,16 +16,24 @@ export function useCaseSubTypeStore() {
     console.warn('caseSubTypeStore used without a loaded project')
   }
 
-  const subtypes = computed<Subtype[]>({
+const subtypes = computed<Subtype[]>({
     get: () => {
       const gov = projectStore.current?.data.govData ?? {}
-      if (!Array.isArray(gov.subtypes)) gov.subtypes = []
-      return gov.subtypes
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      if (!Array.isArray(gov.projectBuild.subtypes)) gov.projectBuild.subtypes = []
+      return gov.projectBuild.subtypes
     },
     set: (val) => {
       if (!projectStore.current) return
       const gov = projectStore.current.data.govData ?? {}
-      gov.subtypes = val
+      
+      // Ensure projectBuild exists
+      if (!gov.projectBuild) gov.projectBuild = {}
+      
+      gov.projectBuild.subtypes = val
       projectStore.current.data.govData = gov
     },
   })

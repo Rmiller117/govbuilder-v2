@@ -389,8 +389,8 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
       
       console.log(`Processing ${result.contentType} with ${result.items.length} items`)
       
-      // Map API items to store format
-      const mappedItems = mapApiItemsToStore(result.contentType as any, result.items)
+// Map API items to store format
+       const mappedItems = mapApiItemsToStore(result.contentType as any, result.items, current.value.data)
       
       console.log(`Mapped ${result.contentType}:`, mappedItems.length, 'items')
       

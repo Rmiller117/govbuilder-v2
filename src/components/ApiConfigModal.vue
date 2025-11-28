@@ -220,6 +220,7 @@ ORDER BY DisplayText</pre>
       </div>
     </div>
   </Modal>
+  <Toast :message="toastMessage" :type="toastType" v-if="showToast" />
 </template>
 
 <script setup lang="ts">
@@ -229,6 +230,7 @@ import { invoke } from '@tauri-apps/api/core'
 import Modal from '@/components/Modal.vue'
 import StepCard from '@/components/StepCard.vue'
 import { type SyncProgress } from '@/utils/apiSyncUtils'
+import Toast from '@/components/Toast.vue'
 
 // Heroicons
 import {
@@ -247,6 +249,20 @@ interface Props {
 interface Emits {
   (e: 'close'): void
   (e: 'complete'): void
+}
+
+const showToast = ref(false)
+const toastMessage = ref('')
+const toastType = ref<'success' | 'error' | 'info'>('success')
+
+function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 'success') {
+  toastMessage.value = message
+  toastType.value = type
+  showToast.value = true
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
 }
 
 defineProps<Props>()

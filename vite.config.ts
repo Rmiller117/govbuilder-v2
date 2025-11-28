@@ -27,6 +27,14 @@ export default defineConfig(() => ({
       // tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+    proxy: {
+      '/api': {
+        target: 'https://marioncountytn.govbuilt.us',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
 
   resolve: {

@@ -557,7 +557,7 @@ const removeStep = (id: string) => {
 
 const saveWorkflow = async () => {
   if (!editingWorkflow.value || editingWorkflow.value.steps.length === 0) {
-    alert('Please add at least one status')
+    showToastMessage('Please add at least one status', 'info')
     return
   }
   await workflowStore.save(editingWorkflow.value)

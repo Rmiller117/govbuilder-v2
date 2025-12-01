@@ -18,23 +18,23 @@ export function useCaseSubTypeStore() {
 
 const subtypes = computed<Subtype[]>({
     get: () => {
-      const gov = projectStore.current?.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      if (!Array.isArray(gov.projectBuild.subtypes)) gov.projectBuild.subtypes = []
-      return gov.projectBuild.subtypes
+      if (!projectStore.current?.data.govData?.projectBuild) {
+        return []
+      }
+      if (!Array.isArray(projectStore.current.data.govData.projectBuild.subtypes)) {
+        projectStore.current.data.govData.projectBuild.subtypes = []
+      }
+      return projectStore.current.data.govData.projectBuild.subtypes
     },
     set: (val) => {
       if (!projectStore.current) return
-      const gov = projectStore.current.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      gov.projectBuild.subtypes = val
-      projectStore.current.data.govData = gov
+      if (!projectStore.current.data.govData) {
+        projectStore.current.data.govData = {}
+      }
+      if (!projectStore.current.data.govData.projectBuild) {
+        projectStore.current.data.govData.projectBuild = {}
+      }
+      projectStore.current.data.govData.projectBuild.subtypes = val
     },
   })
 

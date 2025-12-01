@@ -25,23 +25,23 @@ export function useCaseTypeStore() {
 
 const caseTypes = computed<CaseType[]>({
     get: () => {
-      const gov = projectStore.current?.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      if (!Array.isArray(gov.projectBuild.caseTypes)) gov.projectBuild.caseTypes = []
-      return gov.projectBuild.caseTypes
+      if (!projectStore.current?.data.govData?.projectBuild) {
+        return []
+      }
+      if (!Array.isArray(projectStore.current.data.govData.projectBuild.caseTypes)) {
+        projectStore.current.data.govData.projectBuild.caseTypes = []
+      }
+      return projectStore.current.data.govData.projectBuild.caseTypes
     },
     set: (val) => {
       if (!projectStore.current) return
-      const gov = projectStore.current.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      gov.projectBuild.caseTypes = val
-      projectStore.current.data.govData = gov
+      if (!projectStore.current.data.govData) {
+        projectStore.current.data.govData = {}
+      }
+      if (!projectStore.current.data.govData.projectBuild) {
+        projectStore.current.data.govData.projectBuild = {}
+      }
+      projectStore.current.data.govData.projectBuild.caseTypes = val
     },
   })
 

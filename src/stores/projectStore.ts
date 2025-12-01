@@ -18,8 +18,10 @@ import {
   syncAllContentTypes, 
   mapApiItemsToStore, 
   mergeSyncedItems,
+  createSubtypeLookup,
+  fetchContentItems,
   type SyncResult,
-  type SyncProgress
+  type SyncProgress 
 } from '@/utils/apiSyncUtils'
 
 interface ProjectSummary {
@@ -379,6 +381,59 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
     const results = await syncAllContentTypes(stagingUrl.value, onProgress)
     
     console.log('Sync results:', results)
+    console.log('🔍 DEBUG: All content types in results:', results.map(r => r.contentType))
+    
+    // CRITICAL FIX: Ensure CaseSubType data is available for mapping
+    let caseSubTypeResult = results.find(r => r.contentType === 'CaseSubType')
+    console.log('🔍 DEBUG: CaseSubType result found:', !!caseSubTypeResult, caseSubTypeResult?.success, caseSubTypeResult?.items?.length || 0)
+    if (!caseSubTypeResult || !caseSubTypeResult.success || caseSubTypeResult.items.length === 0) {
+      console.log('🚨 CaseSubType missing or empty, forcing manual fetch...')
+      try {
+        const manualSubTypes = await fetchContentItems(stagingUrl.value, 'CaseSubType')
+        console.log(`🚨 Manual fetch got ${manualSubTypes.length} CaseSubType items`)
+        
+        // Add or replace CaseSubType result
+        const existingIndex = results.findIndex(r => r.contentType === 'CaseSubType')
+        const manualResult: SyncResult = {
+          contentType: 'CaseSubType',
+          success: true,
+          items: manualSubTypes
+        }
+        
+        if (existingIndex >= 0) {
+          results[existingIndex] = manualResult
+        } else {
+          results.push(manualResult)
+        }
+        
+        // Update caseSubTypeResult for lookup creation
+        caseSubTypeResult = manualResult
+      } catch (error) {
+        console.error('🚨 Manual CaseSubType fetch failed:', error)
+        console.error('🚨 This means CaseSubType content type may not exist in the API')
+      }
+    }
+    
+    // Build subtype ID mapping from CaseSubType results FIRST
+    let subtypeLookup: Map<string, string> = new Map()
+    let subtypeIdMap: Map<string, string> = new Map() // Maps govbuiltContentItemId -> local UUID
+    
+    const finalCaseSubTypeResult = results.find(r => r.contentType === 'CaseSubType')
+    if (finalCaseSubTypeResult?.success && finalCaseSubTypeResult.items.length > 0) {
+      const mappedSubtypes = mapApiItemsToStore('CaseSubType' as any, finalCaseSubTypeResult.items, current.value.data)
+      
+      // Create both lookups
+      subtypeLookup = createSubtypeLookup(mappedSubtypes)
+      
+      // Create ID mapping: govbuiltContentItemId -> local UUID
+      mappedSubtypes.forEach(subtype => {
+        if (subtype.govbuiltContentItemId && subtype.id) {
+          subtypeIdMap.set(subtype.govbuiltContentItemId, subtype.id)
+        }
+      })
+    } else {
+      console.log('🚨 DEBUG: No CaseSubType results found or empty!')
+    }
     
     // Process successful syncs
     for (const result of results) {
@@ -389,8 +444,9 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
       
       console.log(`Processing ${result.contentType} with ${result.items.length} items`)
       
-// Map API items to store format
-       const mappedItems = mapApiItemsToStore(result.contentType as any, result.items, current.value.data)
+// Map API items to store format - CRITICAL FIX: Pass both lookups for CaseType
+       console.log(`🔍 DEBUG: Mapping ${result.contentType} with lookup size: ${subtypeLookup.size}, ID map size: ${subtypeIdMap.size}`)
+       const mappedItems = mapApiItemsToStore(result.contentType as any, result.items, current.value.data, subtypeLookup, subtypeIdMap)
       
       console.log(`Mapped ${result.contentType}:`, mappedItems.length, 'items')
       
@@ -415,6 +471,8 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
         case 'CaseType':
           if (!Array.isArray(govData.projectBuild.caseTypes)) govData.projectBuild.caseTypes = []
           govData.projectBuild.caseTypes = mergeSyncedItems(govData.projectBuild.caseTypes, mappedItems)
+          
+
           break
           
         case 'LicenseType':

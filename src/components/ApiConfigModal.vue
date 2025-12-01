@@ -255,15 +255,7 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const toastType = ref<'success' | 'error' | 'info'>('success')
 
-function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 'success') {
-  toastMessage.value = message
-  toastType.value = type
-  showToast.value = true
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    showToast.value = false
-  }, 3000)
-}
+
 
 defineProps<Props>()
 const emit = defineEmits<Emits>()

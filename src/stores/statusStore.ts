@@ -10,25 +10,25 @@ export function useStatusStore() {
     console.warn('statusStore used without a loaded project')
   }
 // Set up the status array in our overall project store (Idk what I'm doing, I'm used to databases lol)
-  const statuses = computed({
+const statuses = computed({
     get: () => {
-      const gov = projectStore.current?.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      if (!Array.isArray(gov.projectBuild.statuses)) gov.projectBuild.statuses = []
-      return gov.projectBuild.statuses
+      if (!projectStore.current?.data.govData?.projectBuild) {
+        return []
+      }
+      if (!Array.isArray(projectStore.current.data.govData.projectBuild.statuses)) {
+        projectStore.current.data.govData.projectBuild.statuses = []
+      }
+      return projectStore.current.data.govData.projectBuild.statuses
     },
     set: (val) => {
       if (!projectStore.current) return
-      const gov = projectStore.current.data.govData ?? {}
-      
-      // Ensure projectBuild exists
-      if (!gov.projectBuild) gov.projectBuild = {}
-      
-      gov.projectBuild.statuses = val
-      projectStore.current.data.govData = gov
+      if (!projectStore.current.data.govData) {
+        projectStore.current.data.govData = {}
+      }
+      if (!projectStore.current.data.govData.projectBuild) {
+        projectStore.current.data.govData.projectBuild = {}
+      }
+      projectStore.current.data.govData.projectBuild.statuses = val
     },
   })
 

@@ -414,6 +414,7 @@ import { useStatusStore } from '@/stores/statusStore'
 import { useCaseSubTypeStore } from '@/stores/caseSubTypeStore'
 import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
 import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
+import { useProjectStore } from '@/stores/projectStore'
 
 
 
@@ -454,10 +455,22 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
 }
 
 const sortedSubtypes = computed(() => [...subtypes.value].sort((a, b) => a.name.localeCompare(b.name)))
-const sortedSubtypeNames = (ids: string[]) => ids.map(id => ({ id, name: subtypeName(id) })).sort((a, b) => a.name.localeCompare(b.name))
 
-const subtypeName = (id: string) => subtypes.value.find(s => s.id === id)?.name || 'Unknown'
-const statusTitle = (id: string) => statuses.value.find((s: { id: string }) => s.id === id)?.title || 'Unknown'
+const sortedSubtypeNames = (ids: string[]) => {
+  return ids.map(id => ({ id, name: subtypeName(id) })).sort((a, b) => a.name.localeCompare(b.name))
+}
+
+const subtypeName = (id: string) => {
+  // Direct lookup from the store to ensure reactivity
+  const subtype = subtypes.value.find(s => s.id === id)
+  return subtype?.name || 'Unknown'
+}
+
+const statusTitle = (id: string) => {
+  // Direct lookup from the store to ensure reactivity
+  const status = statuses.value.find((s: { id: string }) => s.id === id)
+  return status?.title || 'Unknown'
+}
 
 const editingType = ref<CaseType | null>(null)
 const editingWorkflow = ref<Workflow | null>(null)

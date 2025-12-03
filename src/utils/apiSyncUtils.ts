@@ -343,7 +343,8 @@ export function mapApiItemsToStore(
   items: ContentItem[],
   currentProjectData?: any,
   subtypeLookup?: Map<string, string>,
-  subtypeIdMap?: Map<string, string>
+  subtypeIdMap?: Map<string, string>,
+  mappedSubtypes?: any[]
 ): any[] {
   switch (contentType) {
     case 'CaseStatus':
@@ -414,10 +415,19 @@ case 'CaseType':
               return localUuid
             } else {
               console.log(`  ❌ No local UUID found for ${id}`)
-              // Return the govbuiltContentItemId as fallback so it doesn't break
-              return id
+              
+              // Fallback: Try to find subtype by govbuiltContentItemId directly
+              const subtypeByGovbuiltId = mappedSubtypes?.find(sub => sub.govbuiltContentItemId === id)
+              if (subtypeByGovbuiltId) {
+                console.log(`  ✅ Found by govbuiltContentItemId: ${id} -> ${subtypeByGovbuiltId.id}`)
+                return subtypeByGovbuiltId.id
+              }
+              
+              // Final fallback: Skip this subtype to avoid broken references
+              console.log(`  ⚠️ Skipping unmapped subtype ID: ${id}`)
+              return null
             }
-          })
+          }).filter(id => id !== null) as string[]
           
         } else {
           console.log(`🔧 CaseType "${item.DisplayText}" has no subtype text`)

@@ -63,11 +63,45 @@
       </div>
     </header>
 
+    <!-- Navigation Bar -->
+    <div class="bg-surface border-b border-base shadow-sm">
+      <div class="max-w-4xl mx-auto px-6 py-4">
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <!-- Search and Filters -->
+          <div class="flex flex-col sm:flex-row gap-3 flex-1">
+            <SearchInput
+              v-model="searchQuery"
+              placeholder="Search statuses..."
+              class="w-full sm:w-96"
+              @search="handleSearch"
+              @clear="handleSearchClear"
+            />
+            <FilterDropdown
+              :active-filters="activeFilters"
+              @filter-change="handleFilterChange"
+              @filter-clear="handleFilterClear"
+            />
+          </div>
+
+          <!-- Results count -->
+          <div class="text-sm text-[rgb(var(--text-muted))]">
+            <span v-if="totalFilteredItems > 0">
+              {{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'status' : 'statuses' }} found
+            </span>
+            <span v-else>
+              No statuses found
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto px-6 py-10">
       <!-- Status List Container -->
       <div class="bg-surface rounded-2xl shadow-lg border border-base overflow-hidden">
-        <div v-if="!displayedStatuses.length" class="text-center py-20 px-8">
+        <!-- Empty state -->
+        <div v-if="!paginatedStatuses.length && !searchQuery && !Object.keys(activeFilters).length" class="text-center py-20 px-8">
           <div class="bg-surface border border-base w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
             <DocumentTextIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
           </div>
@@ -75,84 +109,113 @@
           <p class="text-[rgb(var(--text-muted))]">Create your first status to get started.</p>
         </div>
 
-        <ul v-else class="divide-y divide-base">
-          <li
-            v-for="s in displayedStatuses"
-            :key="s.id"
-            class="group hover:bg-[rgb(var(--bg))] transition-colors"
+        <!-- No results state -->
+        <div v-else-if="!paginatedStatuses.length" class="text-center py-20 px-8">
+          <div class="bg-surface border border-base w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+            <MagnifyingGlassIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">No statuses found</h3>
+          <p class="text-[rgb(var(--text-muted))]">Try adjusting your search or filters.</p>
+          <button
+            @click="clearAllFilters"
+            class="mt-4 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <div
-              class="px-8 py-6 flex items-center justify-between cursor-pointer"
-              @click="router.push(`/statuses/${s.id}`)"
+            Clear all filters
+          </button>
+        </div>
+
+        <!-- Status list -->
+        <div v-else>
+          <ul class="divide-y divide-base">
+            <li
+              v-for="s in paginatedStatuses"
+              :key="s.id"
+              class="group hover:bg-[rgb(var(--bg))] transition-colors"
             >
-              <div class="flex-1">
-                <h3 class="text-lg font-medium">
-                  {{ s.title?.trim() || "(Untitled status)" }}
-                </h3>
-                
-                <!-- Notification Pills -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <span 
-                    v-if="s.notifyAssignedTeamMembers" 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300"
-                  >
-                    <UsersIcon class="w-3 h-3 mr-1" />
-                    Team
-                  </span>
+              <div
+                class="px-8 py-6 flex items-center justify-between cursor-pointer"
+                @click="router.push(`/statuses/${s.id}`)"
+              >
+                <div class="flex-1">
+                  <h3 class="text-lg font-medium">
+                    {{ s.title?.trim() || "(Untitled status)" }}
+                  </h3>
                   
-                  <span 
-                    v-if="s.notifyApplicant" 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300"
-                  >
-                    <UserIcon class="w-3 h-3 mr-1" />
-                    Applicant
-                  </span>
-                  
-                  <span 
-                    v-if="s.notifyOtherTeamMembers" 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300"
-                  >
-                    <UserGroupIcon class="w-3 h-3 mr-1" />
-                    Other Team
-                  </span>
-                  
-                  <span 
-                    v-if="s.notifyAllContacts" 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300"
-                  >
-                    <UsersIcon class="w-3 h-3 mr-1" />
-                    All Contacts
-                  </span>
-                  
-                  <span 
-                    v-if="s.notifyOtherRecipient" 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300"
-                  >
-                    <EnvelopeIcon class="w-3 h-3 mr-1" />
-                    Other Recipient
-                  </span>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-4">
-                <!-- Hide from status flow chevron icon -->
-                <div v-if="s.hideFromStatusFlowChevron" title="Hidden from status flow">
-                  <EyeSlashIcon class="w-5 h-5 text-[rgb(var(--text-muted))]" />
+                  <!-- Notification Pills -->
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <span 
+                      v-if="s.notifyAssignedTeamMembers" 
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300"
+                    >
+                      <UsersIcon class="w-3 h-3 mr-1" />
+                      Team
+                    </span>
+                    
+                    <span 
+                      v-if="s.notifyApplicant" 
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300"
+                    >
+                      <UserIcon class="w-3 h-3 mr-1" />
+                      Applicant
+                    </span>
+                    
+                    <span 
+                      v-if="s.notifyOtherTeamMembers" 
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300"
+                    >
+                      <UserGroupIcon class="w-3 h-3 mr-1" />
+                      Other Team
+                    </span>
+                    
+                    <span 
+                      v-if="s.notifyAllContacts" 
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300"
+                    >
+                      <UsersIcon class="w-3 h-3 mr-1" />
+                      All Contacts
+                    </span>
+                    
+                    <span 
+                      v-if="s.notifyOtherRecipient" 
+                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300"
+                    >
+                      <EnvelopeIcon class="w-3 h-3 mr-1" />
+                      Other Recipient
+                    </span>
+                  </div>
                 </div>
 
-                <button
-                  @click.stop="remove(s.id)"
-                  class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                  title="Delete status"
-                >
-                  <TrashIcon class="w-5 h-5" />
-                </button>
+                <div class="flex items-center gap-4">
+                  <!-- Hide from status flow chevron icon -->
+                  <div v-if="s.hideFromStatusFlowChevron" title="Hidden from status flow">
+                    <EyeSlashIcon class="w-5 h-5 text-[rgb(var(--text-muted))]" />
+                  </div>
 
-                <ChevronRightIcon class="w-5 h-5 text-[rgb(var(--text-muted))]" />
+                  <button
+                    @click.stop="remove(s.id)"
+                    class="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                    title="Delete status"
+                  >
+                    <TrashIcon class="w-5 h-5" />
+                  </button>
+
+                  <ChevronRightIcon class="w-5 h-5 text-[rgb(var(--text-muted))]" />
+                </div>
               </div>
-            </div>
-          </li>
-        </ul>
+            </li>
+          </ul>
+
+          <!-- Pagination -->
+          <Pagination
+            v-if="totalPages > 1"
+            v-model:current-page="currentPage"
+            :total-items="totalFilteredItems"
+            :page-size="pageSize"
+            :page-size-options="pageSizeOptions"
+            @page-change="handlePageChange"
+            @page-size-change="handlePageSizeChange"
+          />
+        </div>
       </div>
     </main>
     <DashboardButton />
@@ -183,11 +246,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStatusStore } from '@/stores/statusStore'
 import DashboardButton from '@/components/DashboardButton.vue'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
+import SearchInput from '@/components/SearchInput.vue'
+import Pagination from '@/components/Pagination.vue'
+import FilterDropdown from '@/components/FilterDropdown.vue'
 import { importStatusesFromFile } from '@/utils/statusImportUtils'
 import {
   Menu,
@@ -209,11 +275,30 @@ import {
   TrashIcon,
   ChevronRightIcon,
   DocumentArrowUpIcon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-const { list, remove } = useStatusStore()
+const { 
+  remove,
+  // Navigation state
+  searchQuery,
+  currentPage,
+  pageSize,
+  activeFilters,
+  pageSizeOptions,
+  // Computed
+  paginatedStatuses,
+  totalPages,
+  totalFilteredItems,
+  // Actions
+  setSearchQuery,
+  setPage,
+  setPageSize,
+  setFilters,
+  clearFilters
+} = useStatusStore()
 
 // Toast state
 const showToast = ref(false)
@@ -230,11 +315,35 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
   }, 3000)
 }
 
-// Safely filter + clean display
-const displayedStatuses = computed(() => {
-  const arr = Array.isArray(list.value) ? list.value : []
-  return arr.filter((s: any) => s && s.id)  // hides totally broken entries
-})
+// Navigation handlers
+function handleSearch(query: string) {
+  setSearchQuery(query)
+}
+
+function handleSearchClear() {
+  setSearchQuery('')
+}
+
+function handleFilterChange(filters: Record<string, string[]>) {
+  setFilters(filters)
+}
+
+function handleFilterClear() {
+  clearFilters()
+}
+
+function handlePageChange(page: number) {
+  setPage(page)
+}
+
+function handlePageSizeChange(newSize: number) {
+  setPageSize(newSize)
+}
+
+function clearAllFilters() {
+  clearFilters()
+  setSearchQuery('')
+}
 
 // Import functionality
 function importFile() {

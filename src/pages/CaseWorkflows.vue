@@ -64,6 +64,41 @@
       </div>
     </header>
 
+    <!-- Navigation Bar -->
+    <div class="bg-surface border-b border-base shadow-sm">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <!-- Search and Filters -->
+          <div class="flex flex-col sm:flex-row gap-3 flex-1">
+            <SearchInput
+              v-model="searchQuery"
+              placeholder="Search case types..."
+              class="w-full sm:w-96"
+              @search="handleSearch"
+              @clear="handleSearchClear"
+            />
+            <FilterDropdown
+              :active-filters="activeFilters"
+              :show-default-filters="false"
+              :custom-filter-groups="caseTypeFilterGroups"
+              @filter-change="handleFilterChange"
+              @filter-clear="handleFilterClear"
+            />
+          </div>
+
+          <!-- Results count -->
+          <div class="text-sm text-[rgb(var(--text-muted))]">
+            <span v-if="totalFilteredItems > 0">
+              {{ totalFilteredItems }} {{ totalFilteredItems === 1 ? 'case type' : 'case types' }} found
+            </span>
+            <span v-else>
+              No case types found
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <main class="max-w-7xl mx-auto px-6 py-12 space-y-20">
       <!-- Case Types -->
       <section>
@@ -75,45 +110,77 @@
             New Case Type
           </button>
         </div>
-        <TransitionGroup name="list" tag="div" class="space-y-5">
-          <div v-for="type in caseTypes" :key="type.id"
-            class="relative bg-surface rounded-2xl shadow-base border border-base transition-all duration-300 hover:shadow-lg group">
-            <!-- TrashIcon (hover right side only) -->
-            <div class="absolute inset-y-0 right-0 w-32 flex items-center justify-center pointer-events-none">
-              <button @click.stop="deleteCaseType(type.id)"
-                class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                title="Delete case type">
-                <TrashIcon class="w-5 h-5" />
-              </button>
-            </div>
 
-            <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-[rgb(var(--bg))] transition">
-              <!-- Workflow Tag -->
-              <div v-if="type.workflowId" class="absolute top-4 right-8">
-                <button @click.stop="openWorkflowEditor(workflowStore.get(type.workflowId)!)"
-                  class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition">
-                  Workflow: {{ workflowStore.get(type.workflowId)?.name || 'Untitled' }}
+        <!-- Empty state -->
+        <div v-if="!paginatedCaseTypes.length && !searchQuery && !Object.keys(activeFilters).length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
+          No case types yet — click "+ New Case Type" to create one
+        </div>
+
+        <!-- No results state -->
+        <div v-else-if="!paginatedCaseTypes.length" class="text-center py-20 px-8">
+          <div class="bg-surface border border-base w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+            <MagnifyingGlassIcon class="w-12 h-12 text-[rgb(var(--text-muted))]" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">No case types found</h3>
+          <p class="text-[rgb(var(--text-muted))]">Try adjusting your search or filters.</p>
+          <button
+            @click="clearAllFilters"
+            class="mt-4 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Clear all filters
+          </button>
+        </div>
+
+        <!-- Case types list -->
+        <div v-else>
+          <TransitionGroup name="list" tag="div" class="space-y-5">
+            <div v-for="type in paginatedCaseTypes" :key="type.id"
+              class="relative bg-surface rounded-2xl shadow-base border border-base transition-all duration-300 hover:shadow-lg group">
+              <!-- TrashIcon (hover right side only) -->
+              <div class="absolute inset-y-0 right-0 w-32 flex items-center justify-center pointer-events-none">
+                <button @click.stop="deleteCaseType(type.id)"
+                  class="pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                  title="Delete case type">
+                  <TrashIcon class="w-5 h-5" />
                 </button>
               </div>
 
-              <h3 class="font-bold text-xl">{{ type.title }}</h3>
-              <p class="text-sm text-[rgb(var(--text-muted))] mt-1">
-                {{ type.prefix || '' }}{{ type.autoNumber ? '####' : '' }}{{ type.suffix || '' }}
-              </p>
+              <div @click="openEditType(type)" class="pl-10 pr-40 py-8 cursor-pointer hover:bg-[rgb(var(--bg))] transition">
+                <!-- Workflow Tag -->
+                <div v-if="type.workflowId" class="absolute top-4 right-8">
+                  <button @click.stop="openWorkflowEditor(workflowStore.get(type.workflowId)!)"
+                    class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800/40 transition">
+                    Workflow: {{ workflowStore.get(type.workflowId)?.name || 'Untitled' }}
+                  </button>
+                </div>
 
-              <div class="mt-4 flex flex-wrap gap-2">
-                <span v-for="sub in sortedSubtypeNames(type.subtypes)" :key="sub.id"
-                  class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium">
-                  {{ sub.name }}
-                </span>
+                <h3 class="font-bold text-xl">{{ type.title }}</h3>
+                <p class="text-sm text-[rgb(var(--text-muted))] mt-1">
+                  {{ type.prefix || '' }}{{ type.autoNumber ? '####' : '' }}{{ type.suffix || '' }}
+                </p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span v-for="sub in sortedSubtypeNames(type.subtypes)" :key="sub.id"
+                    class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs rounded-full font-medium">
+                    {{ sub.name }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </TransitionGroup>
+          </TransitionGroup>
 
-        <p v-if="!caseTypes.length" class="text-center text-[rgb(var(--text-muted))] italic py-20 text-lg">
-          No case types yet — click "+ New Case Type" to create one
-        </p>
+          <!-- Pagination -->
+          <Pagination
+            v-if="totalPages > 1"
+            v-model:current-page="currentPage"
+            :total-items="totalFilteredItems"
+            :page-size="pageSize"
+            :page-size-options="pageSizeOptions"
+            @page-change="handlePageChange"
+            @page-size-change="handlePageSizeChange"
+            class="mt-8"
+          />
+        </div>
       </section>
 
       <!-- Workflows -->
@@ -414,7 +481,9 @@ import { useStatusStore } from '@/stores/statusStore'
 import { useCaseSubTypeStore } from '@/stores/caseSubTypeStore'
 import { useCaseTypeStore, type CaseType } from '@/stores/caseTypeStore'
 import { useWorkflowStore, type Workflow } from '@/stores/workflowStore'
-import { useProjectStore } from '@/stores/projectStore'
+import SearchInput from '@/components/SearchInput.vue'
+import Pagination from '@/components/Pagination.vue'
+import FilterDropdown from '@/components/FilterDropdown.vue'
 
 
 
@@ -424,7 +493,8 @@ import {
   CogIcon,
   Bars3Icon,
   EllipsisVerticalIcon,
-  ArrowDownTrayIcon
+  ArrowDownTrayIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/vue/24/outline'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
@@ -437,8 +507,27 @@ const workflowStore = useWorkflowStore()
 
 const statuses = computed(() => statusStore.list.value || [])
 const subtypes = computed(() => subtypeStore.list.value || [])
-const caseTypes = computed(() => caseTypeStore.list.value || [])
 const workflows = computed(() => workflowStore.list.value)
+
+// Navigation state from caseTypeStore
+const {
+  // Navigation state
+  searchQuery,
+  currentPage,
+  pageSize,
+  activeFilters,
+  pageSizeOptions,
+  // Computed
+  paginatedCaseTypes,
+  totalPages,
+  totalFilteredItems,
+  // Actions
+  setSearchQuery,
+  setPage,
+  setPageSize,
+  setFilters,
+  clearFilters
+} = caseTypeStore
 
 const showToast = ref(false)
 const toastMessage = ref('')
@@ -454,6 +543,68 @@ function showToastMessage(message: string, type: 'success' | 'error' | 'info' = 
   }, 3000)
 }
 
+// Case Type specific filter groups
+const caseTypeFilterGroups = computed(() => ({
+  workflows: {
+    title: 'Workflow Status',
+    options: [
+      { value: 'withWorkflow', label: 'With Workflow' },
+      { value: 'withoutWorkflow', label: 'Without Workflow' }
+    ]
+  },
+  autoNumbering: {
+    title: 'Auto-Numbering',
+    options: [
+      { value: 'autoNumber', label: 'Auto-Numbered' },
+      { value: 'manualNumber', label: 'Manual Numbering' }
+    ]
+  },
+  autoLicense: {
+    title: 'Auto-License',
+    options: [
+      { value: 'autoLicense', label: 'Auto-Licensed' },
+      { value: 'manualLicense', label: 'Manual License' }
+    ]
+  },
+  subtypes: {
+    title: 'Subtypes',
+    options: [
+      { value: 'withSubtypes', label: 'Has Subtypes' },
+      { value: 'withoutSubtypes', label: 'No Subtypes' }
+    ]
+  }
+}))
+
+// Navigation handlers
+function handleSearch(query: string) {
+  setSearchQuery(query)
+}
+
+function handleSearchClear() {
+  setSearchQuery('')
+}
+
+function handleFilterChange(filters: Record<string, string[]>) {
+  setFilters(filters)
+}
+
+function handleFilterClear() {
+  clearFilters()
+}
+
+function handlePageChange(page: number) {
+  setPage(page)
+}
+
+function handlePageSizeChange(newSize: number) {
+  setPageSize(newSize)
+}
+
+function clearAllFilters() {
+  clearFilters()
+  setSearchQuery('')
+}
+
 const sortedSubtypes = computed(() => [...subtypes.value].sort((a, b) => a.name.localeCompare(b.name)))
 
 const sortedSubtypeNames = (ids: string[]) => {
@@ -461,8 +612,14 @@ const sortedSubtypeNames = (ids: string[]) => {
 }
 
 const subtypeName = (id: string) => {
-  // Direct lookup from the store to ensure reactivity
-  const subtype = subtypes.value.find(s => s.id === id)
+  // First try local UUID lookup (current behavior)
+  let subtype = subtypes.value.find(s => s.id === id)
+  
+  // If not found, try govbuiltContentItemId lookup (for API-synced data)
+  if (!subtype) {
+    subtype = subtypes.value.find(s => s.govbuiltContentItemId === id)
+  }
+  
   return subtype?.name || 'Unknown'
 }
 

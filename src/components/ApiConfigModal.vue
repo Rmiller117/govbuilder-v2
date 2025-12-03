@@ -107,11 +107,16 @@
                     <div>
                       <label class="text-xs font-medium text-[rgb(var(--text-muted))]">SQL Query</label>
                       <div class="mt-1 relative">
-                        <pre class="text-sm font-mono text-[rgb(var(--text))] p-3 pr-12 bg-[rgb(var(--bg))] rounded border border-[rgb(var(--border))]">SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE Published = 1
+                        <pre class="text-sm font-mono text-[rgb(var(--text))] p-3 pr-12 bg-[rgb(var(--bg))] rounded border border-[rgb(var(--border))]">SELECT 
+ci.ContentItemId,
+ci.DisplayText,
+doc.Content
+FROM ContentItemIndex ci
+LEFT JOIN Document doc on ci.DocumentId = doc.Id
+WHERE ContentType = @contentType
+AND Published = 1
 AND Latest = 1
-ORDER BY DisplayText</pre>
+ORDER BY ci.DisplayText</pre>
                         <button @click="copyToClipboard(contentItemsSqlQuery)" class="absolute top-3 right-3 p-1.5 text-[rgb(var(--primary))] hover:bg-[rgb(var(--primary))]/10 rounded transition-colors">
                           <ClipboardIcon class="w-4 h-4" />
                         </button>
@@ -282,11 +287,16 @@ const syncProgress = ref<SyncProgress | null>(null)
 const syncError = ref<string | null>(null)
 
 // SQL Queries
-const contentItemsSqlQuery = `SELECT ContentItemId, DisplayText
-FROM ContentItemIndex
-WHERE Published = 1
+const contentItemsSqlQuery = `SELECT 
+ci.ContentItemId,
+ci.DisplayText,
+doc.Content
+FROM ContentItemIndex ci
+LEFT JOIN Document doc on ci.DocumentId = doc.Id
+WHERE ContentType = @contentType
+AND Published = 1
 AND Latest = 1
-ORDER BY DisplayText`
+ORDER BY ci.DisplayText`
 
 // Computed
 const urlCheckboxLabel = computed(() => 

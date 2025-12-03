@@ -417,10 +417,11 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
     // Build subtype ID mapping from CaseSubType results FIRST
     let subtypeLookup: Map<string, string> = new Map()
     let subtypeIdMap: Map<string, string> = new Map() // Maps govbuiltContentItemId -> local UUID
+    let mappedSubtypes: any[] = [] // Declare in broader scope
     
     const finalCaseSubTypeResult = results.find(r => r.contentType === 'CaseSubType')
     if (finalCaseSubTypeResult?.success && finalCaseSubTypeResult.items.length > 0) {
-      const mappedSubtypes = mapApiItemsToStore('CaseSubType' as any, finalCaseSubTypeResult.items, current.value.data)
+      mappedSubtypes = mapApiItemsToStore('CaseSubType' as any, finalCaseSubTypeResult.items, current.value.data, subtypeLookup, subtypeIdMap)
       
       // Create both lookups
       subtypeLookup = createSubtypeLookup(mappedSubtypes)
@@ -444,9 +445,9 @@ async function syncContentFromApi(onProgress?: (progress: SyncProgress) => void)
       
       console.log(`Processing ${result.contentType} with ${result.items.length} items`)
       
-// Map API items to store format - CRITICAL FIX: Pass both lookups for CaseType
-       console.log(`🔍 DEBUG: Mapping ${result.contentType} with lookup size: ${subtypeLookup.size}, ID map size: ${subtypeIdMap.size}`)
-       const mappedItems = mapApiItemsToStore(result.contentType as any, result.items, current.value.data, subtypeLookup, subtypeIdMap)
+// Map API items to store format - CRITICAL FIX: Pass both lookups and mappedSubtypes for CaseType
+        console.log(`🔍 DEBUG: Mapping ${result.contentType} with lookup size: ${subtypeLookup.size}, ID map size: ${subtypeIdMap.size}`)
+        const mappedItems = mapApiItemsToStore(result.contentType as any, result.items, current.value.data, subtypeLookup, subtypeIdMap, mappedSubtypes)
       
       console.log(`Mapped ${result.contentType}:`, mappedItems.length, 'items')
       

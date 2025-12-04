@@ -341,8 +341,8 @@ export async function syncAllContentTypes(
 export function mapApiItemsToStore(
   contentType: SyncContentType,
   items: ContentItem[],
-  currentProjectData?: any,
-  subtypeLookup?: Map<string, string>,
+  _currentProjectData?: any,
+  _subtypeLookup?: Map<string, string>,
   subtypeIdMap?: Map<string, string>,
   mappedSubtypes?: any[]
 ): any[] {

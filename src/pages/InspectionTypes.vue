@@ -12,6 +12,11 @@
           <h1 class="text-3xl font-bold">Inspection Types</h1>
         </div>
         <div class="flex items-center gap-4">
+          <button @click="exportFile"
+            class="px-6 py-3 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition flex items-center gap-2">
+            <DocumentArrowDownIcon class="w-5 h-5" />
+            Export
+          </button>
           <button @click="importFile"
             class="px-6 py-3 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition flex items-center gap-2">
             <DocumentArrowUpIcon class="w-5 h-5" />
@@ -128,6 +133,9 @@
       </div>
     </main>
     <input ref="fileInputRef" type="file" accept=".csv,.xlsx,.xls" class="hidden" @change="handleFileUpload" />
+    
+    <!-- Toast Component -->
+    <Toast :message="toastMessage" :type="toastType" v-if="showToast" />
   </div>
 </template>
 
@@ -137,7 +145,9 @@ import { useRouter } from 'vue-router'
 import { useInspectionTypeStore } from '@/stores/inspectionTypeStore'
 import { useInspectionWorkflowStore } from '@/stores/inspectionWorkflowStore'
 import { importInspectionTypesFromFile } from '@/utils/inspectionTypeImportUtils'
-import { DocumentArrowUpIcon } from '@heroicons/vue/24/outline'
+import { exportInspectionTypesToFile } from '@/utils/inspectionTypeExportUtils'
+import { DocumentArrowUpIcon, DocumentArrowDownIcon } from '@heroicons/vue/24/outline'
+import Toast from '@/components/Toast.vue'
 import ThemeToggleButton from '@/components/ThemeToggleButton.vue'
 
 // Toast state
@@ -184,6 +194,22 @@ function activeStatuses(wf: any) {
 }
 function importFile() {
   fileInputRef.value?.click()
+}
+
+async function exportFile() {
+  try {
+    showToastMessage('Exporting inspection types...', 'info')
+    
+    const result = await exportInspectionTypesToFile()
+    
+    if (result.success) {
+      showToastMessage('Successfully exported inspection types!', 'success')
+    } else {
+      showToastMessage(`Export failed: ${result.error}`, 'error')
+    }
+  } catch (error) {
+    showToastMessage(`Error during export: ${(error as Error).message}`, 'error')
+  }
 }
 
 async function handleFileUpload(event: Event) {
